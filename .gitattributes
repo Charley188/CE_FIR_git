@@ -1,0 +1,10 @@
+* text=auto
+*.v text eol=lf
+*.sv text eol=lf
+*.vh text eol=lf
+*.m text eol=lf
+*.md text eol=lf
+*.xci text eol=lf
+*.bd text eol=lf
+*.coe text eol=lf
+*.edf -text
