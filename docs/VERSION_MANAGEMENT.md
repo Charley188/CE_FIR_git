@@ -15,4 +15,4 @@
 纳入版本管理：RTL、XCI/BD、约束、COE、MATLAB/PS 源码、XPR、说明与验证摘要。
 不纳入：Vivado 缓存、bit/XSA、日常输入输出、VNA 实测文件及生成结果。重要实验数据和发布 bit/XSA 请另外归档。
 
-本地仓库尚未配置远端。备份时应一起保留 `.repo.git` 和两个工作目录；不要单独删除或移动 `.repo.git`。
+远端 origin：[Charley188/CE_FIR_git](https://github.com/Charley188/CE_FIR_git)。两个开发分支均跟踪对应远端分支，稳定标签也已推送。备份时应一起保留 `.repo.git` 和两个工作目录；不要单独删除或移动 `.repo.git`。
