@@ -1,0 +1,33 @@
+{
+  "original_assets_unchanged": true,
+  "projects": {
+    "tb/ce_fir_tb.xpr": {
+      "direct_file_count": 27,
+      "missing": [],
+      "external": []
+    },
+    "adda/project/ce_fir_adda.xpr": {
+      "direct_file_count": 39,
+      "missing": [],
+      "external": []
+    }
+  },
+  "shared_rtl": [
+    "rtl\\adda_first_path_chain.v",
+    "rtl\\complex_block_async_fifo.v",
+    "rtl\\complex_fir_calibration.v",
+    "rtl\\complex_fir_stream_buffer.v",
+    "rtl\\complex_interp12_top.v",
+    "rtl\\complex_sample_async_fifo.v",
+    "rtl\\fir_full_precision_saturate.v",
+    "rtl\\fir_ip_layout.vh",
+    "rtl\\gearbox_12to8.v",
+    "rtl\\halfband_interp2_ssr3_wrapper.v",
+    "rtl\\halfband_interp2_ssr6_wrapper.v",
+    "rtl\\interp12_ip_layout.vh",
+    "rtl\\interp3_ssr_wrapper.v",
+    "rtl\\reset_sync_n.v",
+    "rtl\\rfdc_8lane_decimator12.v",
+    "rtl\\signed_saturate_16.v"
+  ]
+}

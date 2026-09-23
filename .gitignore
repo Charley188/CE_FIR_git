@@ -36,3 +36,6 @@
 /coeff/*.csv
 /matlab/vna/input/*
 !/matlab/vna/input/.gitkeep
+
+*.bda
+*.rpx

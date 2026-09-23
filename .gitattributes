@@ -7,4 +7,4 @@
 *.xci text eol=lf
 *.bd text eol=lf
 *.coe text eol=lf
-*.edf -text
+*.edf -text -diff

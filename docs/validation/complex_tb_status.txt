@@ -1,0 +1,1 @@
+PASS samples=28608 decimated=2384 fir=2384 beats=3576
