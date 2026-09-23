@@ -1,0 +1,302 @@
+[
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\complex_block_async_fifo.v",
+    "destination": "rtl\\complex_block_async_fifo.v",
+    "source_sha256": "bdd27b6abbd5a50dbd7fed2f41f17b5e0aabf0ec5aefc1038f617933c4499b9f"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\complex_fir_calibration.v",
+    "destination": "rtl\\complex_fir_calibration.v",
+    "source_sha256": "def86c9aa660c07dc650e136f99595b5d64ff3ddcf324a0733773ec8a4bbb920"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\complex_fir_stream_buffer.v",
+    "destination": "rtl\\complex_fir_stream_buffer.v",
+    "source_sha256": "4aa2e21731c9c6a985d8171473592b073d46ef862b907c7ea847057e8b8d65c3"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\complex_interp12_top.v",
+    "destination": "rtl\\complex_interp12_top.v",
+    "source_sha256": "81c754ee8d6551f8245fef49b7826afff617e65319170add581d3e415bb8966f"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\complex_sample_async_fifo.v",
+    "destination": "rtl\\complex_sample_async_fifo.v",
+    "source_sha256": "898b18a439a2753d5f0a1d4ca0d34f4dd8656970051df4426f11d800664bd027"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\fir_full_precision_saturate.v",
+    "destination": "rtl\\fir_full_precision_saturate.v",
+    "source_sha256": "50dd4d61b1bebe620b5480f60ca6d8eeb2b26c07177c280e3bbcf5c30867b95a"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\gearbox_12to8.v",
+    "destination": "rtl\\gearbox_12to8.v",
+    "source_sha256": "72deb48f5a1479108e581abaec74fd3fbd522a42cf3cff8dac6e607836853c75"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\halfband_interp2_ssr3_wrapper.v",
+    "destination": "rtl\\halfband_interp2_ssr3_wrapper.v",
+    "source_sha256": "f57074bc093f477b2f15a5320297950435845f5bfbc42ea01ffebfc0b46faba3"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\halfband_interp2_ssr6_wrapper.v",
+    "destination": "rtl\\halfband_interp2_ssr6_wrapper.v",
+    "source_sha256": "7c302d9f9f6cbe8949a99b6405f3772a079aae50b81d53412fa642fdde89033d"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\interp12_ip_layout.vh",
+    "destination": "rtl\\interp12_ip_layout.vh",
+    "source_sha256": "849bc9ec10425c7f254c9efe7e3d1299fb5dbeb5ed2053aab6e21e5c09fffc3b"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\interp3_ssr_wrapper.v",
+    "destination": "rtl\\interp3_ssr_wrapper.v",
+    "source_sha256": "6e3c556910277576fa87d93ebf38f18d5c5e39cf06a06542d1e1e68a33ec905a"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\rfdc_8lane_decimator12.v",
+    "destination": "rtl\\rfdc_8lane_decimator12.v",
+    "source_sha256": "5735bfcb6aed0d6afc558a8f600116ccf4daee2a427bf239e66d47681c19355e"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\rtl\\signed_saturate_16.v",
+    "destination": "rtl\\signed_saturate_16.v",
+    "source_sha256": "413eb2f463ddedf79f6dc4a3ae1260fe5da79588def13527143b6dda2d1bc0e7"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\hmc7044_module.edf",
+    "destination": "rtl\\hmc7044_module.edf",
+    "source_sha256": "23a2d067b9c6f46052aa7e5c98396f5efa1e01acf41ab8a94f9ce3d45850c18c"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\ad_data_cdc.v",
+    "destination": "rtl\\ad_data_cdc.v",
+    "source_sha256": "f942a4acdf0f9b62e34c6066f6399ff1a4fbdc999cc79d14bd359a331107c8ba"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\ce_chain\\adda_first_path_chain.v",
+    "destination": "rtl\\adda_first_path_chain.v",
+    "source_sha256": "1fcd3b6c83569050b8bbc3dd767952e5897205007f3314217dbf18d83cf99adc"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\da_data_cdc.v",
+    "destination": "rtl\\da_data_cdc.v",
+    "source_sha256": "76a22da7d23949beacafffcea5c3f4c6e8ba7358942f8feb81ba089358c3d7a4"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\dev_reset_module.v",
+    "destination": "rtl\\dev_reset_module.v",
+    "source_sha256": "4cdc66c51cf9c81bc3cfdb227c8e922a3d47dfa739d41365f9e51ff6eb8f49d7"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\hmc7044_module.v",
+    "destination": "rtl\\hmc7044_module.v",
+    "source_sha256": "bb97293dda80638f8a3d875cd4151193d142d84fcf1311a87da86a6d31c1e1e7"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\ce_chain\\reset_sync_n.v",
+    "destination": "rtl\\reset_sync_n.v",
+    "source_sha256": "c90cd695a74a58bfead0cbc0f63dee4f05b25826e57b30755b58bb6575ce5308"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\wire3_spi.v",
+    "destination": "rtl\\wire3_spi.v",
+    "source_sha256": "1a0f2893f402deaf1862f8f665fb6ff3dbce48fb78e463b4964882b30098f23f"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\new\\sys_top.v",
+    "destination": "rtl\\sys_top.v",
+    "source_sha256": "10a784eae75b67de4912e0a135d14c0f7ac1f766e4268b5e466b8a89bb4681b6"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\constrs_1\\new\\sys_pins.xdc",
+    "destination": "adda\\constraints\\sys_pins.xdc",
+    "source_sha256": "b74f224ea3fb29c69ae0cad13d27a38e2a5f0ab152805045673c27e095975a41"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\constrs_1\\new\\ce_chain_timing_cdc.xdc",
+    "destination": "adda\\constraints\\ce_chain_timing_cdc.xdc",
+    "source_sha256": "ba94133896e8269c5a2888e3764c869dccaea158f19a6add184d66ca46f66a61"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\fir_coef_im.coe",
+    "destination": "coeff\\fir_coef_im.coe",
+    "source_sha256": "d00e22bf5368607e4a9d03caf00cbce318d4a2c4dbdc894c4ed4015b6e0f03e8"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\fir_coef_im.coe",
+    "destination": "coeff\\presets\\fir_coef_im.coe",
+    "source_sha256": "d00e22bf5368607e4a9d03caf00cbce318d4a2c4dbdc894c4ed4015b6e0f03e8"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\fir_coef_re.coe",
+    "destination": "coeff\\fir_coef_re.coe",
+    "source_sha256": "2862e570cdf0ffa70ce647576497131cf77ff03dbac4d453b4a694316a6e6075"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\fir_coef_re.coe",
+    "destination": "coeff\\presets\\fir_coef_re.coe",
+    "source_sha256": "2862e570cdf0ffa70ce647576497131cf77ff03dbac4d453b4a694316a6e6075"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\interp2_stage2_odd.coe",
+    "destination": "coeff\\interp2_stage2_odd.coe",
+    "source_sha256": "5fcfa1bd5a21a3f13622c46154137b7639f679be2017f8e441aa0033c0b5e808"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\interp2_stage2_odd.coe",
+    "destination": "coeff\\presets\\interp2_stage2_odd.coe",
+    "source_sha256": "5fcfa1bd5a21a3f13622c46154137b7639f679be2017f8e441aa0033c0b5e808"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\interp2_stage3_odd.coe",
+    "destination": "coeff\\interp2_stage3_odd.coe",
+    "source_sha256": "2d87c1dd4acea346bc943b1f969c6f8056f44f6a465c6238795bacbaa9cf9153"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\interp2_stage3_odd.coe",
+    "destination": "coeff\\presets\\interp2_stage3_odd.coe",
+    "source_sha256": "2d87c1dd4acea346bc943b1f969c6f8056f44f6a465c6238795bacbaa9cf9153"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\interp3_stage1.coe",
+    "destination": "coeff\\interp3_stage1.coe",
+    "source_sha256": "839b25e72957ee56e66acc77fd222053759285254bcfad8173cef07542446de8"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\coeff\\interp3_stage1.coe",
+    "destination": "coeff\\presets\\interp3_stage1.coe",
+    "source_sha256": "839b25e72957ee56e66acc77fd222053759285254bcfad8173cef07542446de8"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\ip\\fir_coef_im\\fir_coef_im.xci",
+    "destination": "ip\\fir_coef_im\\fir_coef_im.xci",
+    "source_sha256": "926616eb0422f5f417566cecd52ec2e2dd6a364d6c53418afcd4865e1bcc76d7"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\ip\\fir_coef_re\\fir_coef_re.xci",
+    "destination": "ip\\fir_coef_re\\fir_coef_re.xci",
+    "source_sha256": "65b64b8f05a12512b9c3819a1d764e479bda856f305322facfe80208152a799c"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\ip\\interp2_stage2_odd\\interp2_stage2_odd.xci",
+    "destination": "ip\\interp2_stage2_odd\\interp2_stage2_odd.xci",
+    "source_sha256": "4989742da19f7ca43aa4328fd0b3ccec78f151e147c3ea57b581af623f5e6cf9"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\ip\\interp2_stage3_odd\\interp2_stage3_odd.xci",
+    "destination": "ip\\interp2_stage3_odd\\interp2_stage3_odd.xci",
+    "source_sha256": "fe649651e9eafe01f7e5cb7f01fba54e99340f040ebfe529ac4859b2a42be59b"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\tb_CE_FIR\\ip\\interp3_stage1\\interp3_stage1.xci",
+    "destination": "ip\\interp3_stage1\\interp3_stage1.xci",
+    "source_sha256": "795d439a83d5e817eebd1f5d44efbad673a6c8fed318273636b5f3fb5a47ff72"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\ip\\fifo_generator_0\\fifo_generator_0.xci",
+    "destination": "ip\\fifo_generator_0\\fifo_generator_0.xci",
+    "source_sha256": "821825eb67623789e6cabe30752123377393cd7d5cd61b89d60fd55660a26b5d"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\ip\\ila_adc\\ila_adc.xci",
+    "destination": "ip\\ila_adc\\ila_adc.xci",
+    "source_sha256": "ff3c8c4f614a0c62550495094a091273650635dae223ce42e0d0fda2ee3484a0"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\design_1.bd",
+    "destination": "adda\\bd\\design_1\\design_1.bd",
+    "source_sha256": "b16cc543270640900c1fc015b5b8a6e3ea3b6da434c36776f85745218285860f"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_auto_pc_0\\design_1_auto_pc_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_auto_pc_0\\design_1_auto_pc_0.xci",
+    "source_sha256": "e2a749834c887532e6e3470585482954847ac215711a5f3ac5562e22d64e14e6"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_axi_interconnect_0_1\\design_1_axi_interconnect_0_1.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_axi_interconnect_0_1\\design_1_axi_interconnect_0_1.xci",
+    "source_sha256": "712024c828a6a8d4a44b3092a3a5bafb387f26808b1804678d637674e272173d"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_axi_quad_spi_0_0\\design_1_axi_quad_spi_0_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_axi_quad_spi_0_0\\design_1_axi_quad_spi_0_0.xci",
+    "source_sha256": "364f023453148c3edf35120c5d855c9513bb298f83a6c5af3bf14f553fdf297a"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_clk_wiz_0_0\\design_1_clk_wiz_0_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_clk_wiz_0_0\\design_1_clk_wiz_0_0.xci",
+    "source_sha256": "c498040b8af4c13ab82c5d15e826b8156f5a61f3acc40676e80e99c32ee8ba0c"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_clk_wiz_1_0\\design_1_clk_wiz_1_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_clk_wiz_1_0\\design_1_clk_wiz_1_0.xci",
+    "source_sha256": "153fe37eeb25f9a1862cffb370c1aa9f9be70f7012b477dfeba60dab43061ffb"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_clk_wiz_2_0\\design_1_clk_wiz_2_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_clk_wiz_2_0\\design_1_clk_wiz_2_0.xci",
+    "source_sha256": "0e1aad60b96e9a9c14a6645e502dad86159ed10dbbb288c80250bdc3a44fda1e"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_clk_wiz_adc_0\\design_1_clk_wiz_adc_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_clk_wiz_adc_0\\design_1_clk_wiz_adc_0.xci",
+    "source_sha256": "bbf83cae162490a95041a72d5c4d704ab77c76c0772a7d6d91646fda9f3c00b3"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_rst_ps8_0_100M_0\\design_1_rst_ps8_0_100M_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_rst_ps8_0_100M_0\\design_1_rst_ps8_0_100M_0.xci",
+    "source_sha256": "1b28b1dc22df766fc00743eda0df380116de8c064a2729cba6c196d2feac7c57"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_system_ila_0_2\\design_1_system_ila_0_2.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_system_ila_0_2\\design_1_system_ila_0_2.xci",
+    "source_sha256": "42dfde6d3ee8cde37843e73c96f0b8cadb0023f33cd12a9b168f8beafd5304fd"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_usp_rf_data_converter_0_0\\design_1_usp_rf_data_converter_0_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_usp_rf_data_converter_0_0\\design_1_usp_rf_data_converter_0_0.xci",
+    "source_sha256": "a6e31418f8b2a539c628387ed58f9442f4aedb5a472ffe0e5c3bf06d364e1f4f"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_xbar_1\\design_1_xbar_1.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_xbar_1\\design_1_xbar_1.xci",
+    "source_sha256": "87493cd4d2af2df90779042010360416a4e3a9f8f7a85f44ca8df4d2258dc8ad"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\CE\\adda\\rfsoc_47dr_1156_adda_calc.srcs\\sources_1\\bd\\design_1\\ip\\design_1_zynq_ultra_ps_e_0_0\\design_1_zynq_ultra_ps_e_0_0.xci",
+    "destination": "adda\\bd\\design_1\\ip\\design_1_zynq_ultra_ps_e_0_0\\design_1_zynq_ultra_ps_e_0_0.xci",
+    "source_sha256": "b215db68c00a6f9edf8e941cb51f5e8df8c3f16c7e5f615a98c0c2ca4fc119fe"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\app_seu\\src\\delay.c",
+    "destination": "ps\\src\\delay.c",
+    "source_sha256": "2e5f5f38914f65bd4184f627edb1ecacc27af25a23c836df444d11ee1adf6660"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\app_seu\\src\\delay.h",
+    "destination": "ps\\src\\delay.h",
+    "source_sha256": "f4a704cc60bb1ea96fe60cf829df844ca72f5b65b4973c1901598d1483c8358c"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\app_seu\\src\\lscript.ld",
+    "destination": "ps\\src\\lscript.ld",
+    "source_sha256": "bda820415664e41b945de267d5900321f034549847ab59bcd87005925802886b"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\app_seu\\src\\main.c",
+    "destination": "ps\\src\\main.c",
+    "source_sha256": "9c932717507c24fd52c50e92b4c21d0d8988134902f7ac5e8927a25ed9d4396e"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\app_seu\\src\\parameters.h",
+    "destination": "ps\\src\\parameters.h",
+    "source_sha256": "32267d73b543c4c97097cf21c5f7dfcaf4c7a74f94b53d162e07c79eb2772a0d"
+  },
+  {
+    "source": "D:\\CE\\CE_45tap_FIR\\app_seu\\src\\README.txt",
+    "destination": "ps\\src\\README.txt",
+    "source_sha256": "265e6e74d7913c397b2e78997cb08682ffdae7c838f321a3f21f521f51e92dbc"
+  }
+]

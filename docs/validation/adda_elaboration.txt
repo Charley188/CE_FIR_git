@@ -1,0 +1,2 @@
+754 Infos, 690 Warnings, 0 Critical Warnings and 0 Errors encountered.
+ADDA_RTL_ELABORATION_PASS

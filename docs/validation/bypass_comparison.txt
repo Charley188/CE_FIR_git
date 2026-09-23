@@ -1,0 +1,4 @@
+PASS=1
+decimator samples=2130 max_error_lsb=0 rms_error_lsb=0
+fir samples=2130 max_error_lsb=0 rms_error_lsb=0
+dac samples=25560 max_error_lsb=0 rms_error_lsb=0

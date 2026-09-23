@@ -1,0 +1,5 @@
+VNA H=1 export: PASS
+Synthetic complex bypass MAT/CSV equivalence: PASS
+Injected 1 LSB error rejected: PASS
+Injected DAC lane error rejected: PASS
+Real VNA hardware measurement: NOT PERFORMED
