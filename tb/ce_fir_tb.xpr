@@ -4,7 +4,7 @@
 <!-- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.                   -->
 <!-- Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.   -->
 
-<Project Product="Vivado" Version="7" Minor="65" Path="D:/CE/CE_FIR_git/CE_45tap_git/tb/ce_fir_tb.xpr">
+<Project Product="Vivado" Version="7" Minor="65" Path="D:/FPGA/CE_FIR_git/CE_45tap_git/tb/ce_fir_tb.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="4e7db08e83a948a18e76aaa463ecd03d"/>
@@ -304,7 +304,7 @@
         <Option Name="PamPseudoTop" Val="pseudo_tb"/>
         <Option Name="SrcSet" Val="sources_1"/>
         <Option Name="xsim.simulate.runtime" Val="all"/>
-        <Option Name="xsim.simulate.xsim.more_options" Val="-testplusarg INPUT_DIR=D:/CE/CE_FIR_git/CE_45tap_git/data/input -testplusarg OUTPUT_DIR=D:/CE/CE_FIR_git/CE_45tap_git/data/output"/>
+        <Option Name="xsim.simulate.xsim.more_options" Val="-testplusarg INPUT_DIR=D:/FPGA/CE_FIR_git/CE_45tap_git/data/input -testplusarg OUTPUT_DIR=D:/FPGA/CE_FIR_git/CE_45tap_git/data/output"/>
       </Config>
     </FileSet>
     <FileSet Name="utils_1" Type="Utils" RelSrcDir="$PSRCDIR/utils_1" RelGenDir="$PGENDIR/utils_1">
