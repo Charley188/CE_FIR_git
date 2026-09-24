@@ -1,5 +1,7 @@
 # 在线加载与调频验证（2026-09-24）
 
+当前FIR VNA补偿算法已改为FFT一致的方法，算法专项测试见 [VNA_ALGORITHM_VALIDATION.md](VNA_ALGORITHM_VALIDATION.md)。下列在线加载/RTL记录属于此前硬件验证。
+
 环境：Vivado/XSim 2023.2、MATLAB R2025b、Vitis ARM GCC。
 
 已完成：

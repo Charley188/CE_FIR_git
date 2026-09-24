@@ -1,28 +1,57 @@
-# 单路 VNA 校准
+# 300tap 单路 VNA 校准：与 FFT 相同的设计方法
 
-打开 `matlab/VNA_MAIN.m`，编辑顶部参数后点击 Run。
+入口为 `matlab/VNA_MAIN.m`。MATLAB 只导出结果，复制到 `ps/src/coeff` 由你手动完成。
 
-## 模式一：测量 bypass
+## 1. 测量原始 bypass
 
-`MODE=1` 生成 `matlab/vna/output/bypass/fir_coef_re.coe` 和 `fir_coef_im.coe`。实部首 tap 为 65536，其他为 0；虚部全零，即校准 FIR 的 H=1。
-抽取、插值及模拟链路仍然存在，这正是随后测量的 bypass 系统。这里没有额外的 FIR 移位延迟。
+MODE=1 输出 `matlab/vna/output/bypass/`：实部首 tap 为 65536，其余为0；虚部全0。校准 FIR 的数学响应为H=1，固定插值、抽取、RFDC和模拟链路仍保留。
 
-在 MAIN 中选择 `vna_bypass`，运行模式一，生成仿真输入；用于测量时手动把 bypass 目录的 h_re.mem、h_im.mem 复制到 ps/src/coeff，再 Vitis Clean → Build → Run。测得复数 S21 后保存到 `matlab/vna/input/`。
+手动复制该目录的 `h_re.mem`、`h_im.mem` 到 `ps/src/coeff`，Vitis Clean → Build → Run，测量复数S21。
 
-## 模式二：根据实测 bypass 优化系数
+## 2. 导入测量并设计补偿
 
-`MODE=2`；设置 `cfg.measurement_file`、射频中心 `center_hz`。
+MODE=2；`cfg.measurement_file` 留空时弹窗选择文件，也可填写路径。
 
-- MAT：`freq_axis`（Hz）与 `vna_data`（复数 S21）。兼容 `freq`、`sdata_complex` 字段。
-- CSV：三列，频率 Hz、S21 实部、S21 虚部。
-- 数据要覆盖中心 ±100 MHz，频率不能重复，点数至少等于 tap 数。
+- MAT：`freq_axis`（Hz）、`vna_data`（复数S21）；兼容 `freq` / `sdata_complex`。
+- CSV：频率Hz、S21实部、S21虚部三列，不能直接填dB/相位列。
+- `center_hz` 为实际RF中心，基带频率=测量频率−中心。频谱方向不自动推断。
+- 测量必须覆盖指定通带，通带内点数严格大于300；频率不重复、数据有限，通带深零点会被拒绝。
 
-按当前分支的 45/300 tap、200 MSPS、18 位 Q2.16 约束做正则化复数最小二乘拟合。目标幅频响应在 ±80 MHz 内平坦，80～100 MHz 为升余弦过渡。
-保留实测整体传输延迟，补偿剩余频响；默认额外 FIR 延迟为 floor((N-1)/2) 个 200 MSPS 样本。该延迟处理仅用于 VNA 设计，不用于 MATLAB/TB 比对对齐。
+| 参数 | 默认 | 含义 |
+|---|---:|---|
+| 采样率 / tap数 | 200 MSPS / 300 | 保持当前FIR硬件配置 |
+| `passband_hz` | 80 MHz | 拟合中心±80MHz内的复数响应 |
+| `stopband_hz` | 90 MHz | ±90～100MHz为带外约束区；必须小于Nyquist频率 |
+| `target_delay_samples` | 149 | 补偿后整体响应的目标延迟，745ns |
+| `regularization` | 1e-4 | 初始正则化；不满足增益/量化范围时乘10重新求解 |
+| `max_gain_db` | 6 dB | 补偿滤波器的峰值增益限制 |
 
-`target_gain` 指定目标通带幅度；`regularization` 控制求逆正则化；`max_gain_db` 限制浮点补偿滤波器在密集频率网格上的峰值增益。限制触发时整体缩小系数并报告 scale，实际幅度目标可能无法达到。量化后的峰值和通带误差另外报告，不保证任意实测链路都可由有限 tap 精确补偿。
+目标幅度取实测通带幅度中位数，不再固定追求绝对0dB。通带外加入两侧各128个约束频点，矩阵系数0.25；通带最多选4097个点求解。使用增广矩阵最小二乘，lambda=regularization×拟合点数，最多8次尝试；不再整体缩小已求出的系数。方法与 `CE_FFT_git/matlab/lib/ce_vna.m` 一致。
 
-输出到 `matlab/vna/output/compensated/`：实部/虚部 COE 和同名 h_re.mem / h_im.mem、tap 表、拟合参数、原始/补偿/目标频响和对比图。
-MAIN 模式一选择 `vna_compensated`，再走真实 IP 仿真和 MATLAB 模式二。数值比对通过后，手动复制 compensated 目录的两份 MEM 到 ps/src/coeff，再 Vitis Clean → Build → Run。
+**延迟语义已与FFT一致：不再自动去除测量的整体延迟，149点是总目标延迟，不是原链路延迟上额外增加149点。** 如果目标延迟对当前通道不可实现，算法即使输出了合法系数，也可能有很大的幅度/相位残差；必须检查结果。当前实现不自动搜索最佳延迟，不保证任意测量都能得到平坦响应。
 
-这里同时输出 COE 和 MEM，在线加载流程见 ONLINE.md；复制到 PS 的步骤由你手动完成。VNA 只处理一个通道，也不附带历史演示或其他校准功能。
+80～90MHz为未直接拟合的过渡区，不再指定原版本的升余弦过渡目标。
+
+## 3. FIR和FFT必须保留的差异
+
+二者先求有限长度时域h。FIR直接量化300个时域tap；FFT对h补零并FFT后量化频域点。FIR仍输出300行signed18/Q2.16 MEM，硬件和PS协议未改。
+
+增益检查采用32768点FFT的浮点峰值加时域tap量化误差L1界；FIR没有OLS量化尾部。结果中的 `peak_gain_db` 是上述网格检查界，`quantized_peak_gain` 是量化后网格峰值的线性值。
+
+## 4. 看什么结果
+
+`matlab/vna/output/compensated/` 包含：
+
+- `h_re.mem` / `h_im.mem`、对应COE和 `taps.csv`。
+- `design.mat`：浮点/量化系数、配置、指标和通带预测响应。
+- `metrics.txt`：补偿前后纹波、整体电平偏差、最大幅度偏差、相位误差、使用的正则化与尝试次数。
+- `response.csv`：七列依次为RF频率、原S21实/虚部、量化补偿预测实/虚部、目标实/虚部；仅输出拟合通带。
+- `response.png`：幅度相对通带中位数，相位相对目标总延迟；指标及曲线均基于量化后的tap。
+
+幅度不平主要看 `predicted_ripple_db`，整体偏高/偏低看 `predicted_level_offset_db`，二者不要混为一谈。满足增益限制并不等于补偿效果达标。
+
+## 5. 验证与上板
+
+MAIN MODE=1 选择 `vna_compensated` → Vivado主TB → MAIN MODE=2，验证数字实现。之后你手动复制补偿MEM到PS并运行应用，再测量S21确认实际改善。
+
+本次算法测试使用合成通道，不能代替实测补偿；测试细节见 `VNA_ALGORITHM_VALIDATION.md`。未改FFT工程、RTL/IP或PS，未自动复制系数到PS。
