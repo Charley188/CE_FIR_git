@@ -28,7 +28,19 @@
         "m00_couplers": {},
         "m01_couplers": {},
         "m02_couplers": {}
-      }
+      },
+      "nco_adc_ctrl": "",
+      "vio_adc_freq": "",
+      "adc0_01_phase_zero": "",
+      "adc0_01_phase_rst_zero": "",
+      "adc0_23_phase_zero": "",
+      "adc0_23_phase_rst_zero": "",
+      "nco_dac_ctrl": "",
+      "vio_dac_freq": "",
+      "dac00_phase_zero": "",
+      "dac00_phase_rst_zero": "",
+      "dac02_phase_zero": "",
+      "dac02_phase_rst_zero": ""
     },
     "interface_ports": {
       "sys": {
@@ -4223,12 +4235,6 @@
           "ADC_CalOpt_Mode02": {
             "value": "2"
           },
-          "ADC_Coarse_Mixer_Freq00": {
-            "value": "1"
-          },
-          "ADC_Coarse_Mixer_Freq02": {
-            "value": "1"
-          },
           "ADC_DSA_RTS": {
             "value": "false"
           },
@@ -4248,16 +4254,19 @@
             "value": "0"
           },
           "ADC_Mixer_Type00": {
-            "value": "1"
+            "value": "2"
           },
           "ADC_Mixer_Type02": {
-            "value": "1"
+            "value": "2"
           },
           "ADC_NCO_Freq00": {
             "value": "1.2"
           },
           "ADC_NCO_Freq02": {
             "value": "1.2"
+          },
+          "ADC_NCO_RTS": {
+            "value": "true"
           },
           "ADC_Nyquist00": {
             "value": "0"
@@ -4301,12 +4310,6 @@
           "DAC228_En": {
             "value": "true"
           },
-          "DAC_Coarse_Mixer_Freq00": {
-            "value": "2"
-          },
-          "DAC_Coarse_Mixer_Freq02": {
-            "value": "2"
-          },
           "DAC_Data_Width00": {
             "value": "16"
           },
@@ -4323,16 +4326,19 @@
             "value": "0"
           },
           "DAC_Mixer_Type00": {
-            "value": "1"
+            "value": "2"
           },
           "DAC_Mixer_Type02": {
-            "value": "1"
+            "value": "2"
           },
           "DAC_NCO_Freq00": {
-            "value": "-3.6"
+            "value": "-1.2"
           },
           "DAC_NCO_Freq02": {
-            "value": "-3.6"
+            "value": "-1.2"
+          },
+          "DAC_NCO_RTS": {
+            "value": "true"
           },
           "DAC_Nyquist00": {
             "value": "0"
@@ -5171,6 +5177,412 @@
             ]
           }
         }
+      },
+      "nco_adc_ctrl": {
+        "vlnv": "xilinx.com:module_ref:ce_nco_vio_ctrl:1.0",
+        "ip_revision": "1",
+        "xci_name": "design_1_nco_adc_ctrl_0",
+        "xci_path": "ip\\design_1_nco_adc_ctrl_0\\design_1_nco_adc_ctrl_0.xci",
+        "inst_hier_path": "nco_adc_ctrl",
+        "parameters": {
+          "BUSY_WIDTH": {
+            "value": "1"
+          }
+        },
+        "reference_info": {
+          "ref_type": "hdl",
+          "ref_name": "ce_nco_vio_ctrl",
+          "boundary_crc": "0x0"
+        },
+        "ports": {
+          "clk": {
+            "type": "clk",
+            "direction": "I",
+            "parameters": {
+              "ASSOCIATED_RESET": {
+                "value": "rst_n",
+                "value_src": "constant"
+              },
+              "FREQ_HZ": {
+                "value": "100000000",
+                "value_src": "ip_prop"
+              },
+              "PHASE": {
+                "value": "0.0",
+                "value_src": "ip_prop"
+              },
+              "CLK_DOMAIN": {
+                "value": "design_1_clk_wiz_1_0_clk_out1_200M",
+                "value_src": "ip_prop"
+              }
+            }
+          },
+          "rst_n": {
+            "type": "rst",
+            "direction": "I",
+            "parameters": {
+              "POLARITY": {
+                "value": "ACTIVE_LOW",
+                "value_src": "constant"
+              }
+            }
+          },
+          "freq0": {
+            "direction": "I",
+            "left": "47",
+            "right": "0"
+          },
+          "freq1": {
+            "direction": "I",
+            "left": "47",
+            "right": "0"
+          },
+          "channel_mask": {
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
+          "apply_toggle": {
+            "direction": "I"
+          },
+          "nco_busy": {
+            "direction": "I",
+            "left": "0",
+            "right": "0"
+          },
+          "nco_freq0": {
+            "direction": "O",
+            "left": "47",
+            "right": "0"
+          },
+          "nco_freq1": {
+            "direction": "O",
+            "left": "47",
+            "right": "0"
+          },
+          "nco_en0": {
+            "direction": "O",
+            "left": "5",
+            "right": "0"
+          },
+          "nco_en1": {
+            "direction": "O",
+            "left": "5",
+            "right": "0"
+          },
+          "nco_req": {
+            "direction": "O"
+          },
+          "status": {
+            "direction": "O",
+            "left": "3",
+            "right": "0"
+          },
+          "completed_count": {
+            "direction": "O",
+            "left": "15",
+            "right": "0"
+          }
+        }
+      },
+      "vio_adc_freq": {
+        "vlnv": "xilinx.com:ip:vio:3.0",
+        "ip_revision": "24",
+        "xci_name": "design_1_vio_adc_freq_0",
+        "xci_path": "ip\\design_1_vio_adc_freq_0\\design_1_vio_adc_freq_0.xci",
+        "inst_hier_path": "vio_adc_freq",
+        "parameters": {
+          "C_NUM_PROBE_IN": {
+            "value": "4"
+          },
+          "C_NUM_PROBE_OUT": {
+            "value": "4"
+          },
+          "C_PROBE_OUT0_INIT_VAL": {
+            "value": "0x400000000000"
+          },
+          "C_PROBE_OUT0_WIDTH": {
+            "value": "48"
+          },
+          "C_PROBE_OUT1_INIT_VAL": {
+            "value": "0x400000000000"
+          },
+          "C_PROBE_OUT1_WIDTH": {
+            "value": "48"
+          },
+          "C_PROBE_OUT2_INIT_VAL": {
+            "value": "0x3"
+          },
+          "C_PROBE_OUT2_WIDTH": {
+            "value": "2"
+          },
+          "C_PROBE_OUT3_WIDTH": {
+            "value": "1"
+          }
+        }
+      },
+      "adc0_01_phase_zero": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "design_1_adc0_01_phase_zero_0",
+        "xci_path": "ip\\design_1_adc0_01_phase_zero_0\\design_1_adc0_01_phase_zero_0.xci",
+        "inst_hier_path": "adc0_01_phase_zero",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          },
+          "CONST_WIDTH": {
+            "value": "18"
+          }
+        }
+      },
+      "adc0_01_phase_rst_zero": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "design_1_adc0_01_phase_rst_zero_0",
+        "xci_path": "ip\\design_1_adc0_01_phase_rst_zero_0\\design_1_adc0_01_phase_rst_zero_0.xci",
+        "inst_hier_path": "adc0_01_phase_rst_zero",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          },
+          "CONST_WIDTH": {
+            "value": "1"
+          }
+        }
+      },
+      "adc0_23_phase_zero": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "design_1_adc0_23_phase_zero_0",
+        "xci_path": "ip\\design_1_adc0_23_phase_zero_0\\design_1_adc0_23_phase_zero_0.xci",
+        "inst_hier_path": "adc0_23_phase_zero",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          },
+          "CONST_WIDTH": {
+            "value": "18"
+          }
+        }
+      },
+      "adc0_23_phase_rst_zero": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "design_1_adc0_23_phase_rst_zero_0",
+        "xci_path": "ip\\design_1_adc0_23_phase_rst_zero_0\\design_1_adc0_23_phase_rst_zero_0.xci",
+        "inst_hier_path": "adc0_23_phase_rst_zero",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          },
+          "CONST_WIDTH": {
+            "value": "1"
+          }
+        }
+      },
+      "nco_dac_ctrl": {
+        "vlnv": "xilinx.com:module_ref:ce_nco_vio_ctrl:1.0",
+        "ip_revision": "1",
+        "xci_name": "design_1_nco_dac_ctrl_0",
+        "xci_path": "ip\\design_1_nco_dac_ctrl_0\\design_1_nco_dac_ctrl_0.xci",
+        "inst_hier_path": "nco_dac_ctrl",
+        "parameters": {
+          "BUSY_WIDTH": {
+            "value": "2"
+          }
+        },
+        "reference_info": {
+          "ref_type": "hdl",
+          "ref_name": "ce_nco_vio_ctrl",
+          "boundary_crc": "0x0"
+        },
+        "ports": {
+          "clk": {
+            "type": "clk",
+            "direction": "I",
+            "parameters": {
+              "ASSOCIATED_RESET": {
+                "value": "rst_n",
+                "value_src": "constant"
+              },
+              "FREQ_HZ": {
+                "value": "100000000",
+                "value_src": "ip_prop"
+              },
+              "PHASE": {
+                "value": "0.0",
+                "value_src": "ip_prop"
+              },
+              "CLK_DOMAIN": {
+                "value": "design_1_clk_wiz_1_0_clk_out1_200M",
+                "value_src": "ip_prop"
+              }
+            }
+          },
+          "rst_n": {
+            "type": "rst",
+            "direction": "I",
+            "parameters": {
+              "POLARITY": {
+                "value": "ACTIVE_LOW",
+                "value_src": "constant"
+              }
+            }
+          },
+          "freq0": {
+            "direction": "I",
+            "left": "47",
+            "right": "0"
+          },
+          "freq1": {
+            "direction": "I",
+            "left": "47",
+            "right": "0"
+          },
+          "channel_mask": {
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
+          "apply_toggle": {
+            "direction": "I"
+          },
+          "nco_busy": {
+            "direction": "I",
+            "left": "1",
+            "right": "0"
+          },
+          "nco_freq0": {
+            "direction": "O",
+            "left": "47",
+            "right": "0"
+          },
+          "nco_freq1": {
+            "direction": "O",
+            "left": "47",
+            "right": "0"
+          },
+          "nco_en0": {
+            "direction": "O",
+            "left": "5",
+            "right": "0"
+          },
+          "nco_en1": {
+            "direction": "O",
+            "left": "5",
+            "right": "0"
+          },
+          "nco_req": {
+            "direction": "O"
+          },
+          "status": {
+            "direction": "O",
+            "left": "3",
+            "right": "0"
+          },
+          "completed_count": {
+            "direction": "O",
+            "left": "15",
+            "right": "0"
+          }
+        }
+      },
+      "vio_dac_freq": {
+        "vlnv": "xilinx.com:ip:vio:3.0",
+        "ip_revision": "24",
+        "xci_name": "design_1_vio_dac_freq_0",
+        "xci_path": "ip\\design_1_vio_dac_freq_0\\design_1_vio_dac_freq_0.xci",
+        "inst_hier_path": "vio_dac_freq",
+        "parameters": {
+          "C_NUM_PROBE_IN": {
+            "value": "4"
+          },
+          "C_NUM_PROBE_OUT": {
+            "value": "4"
+          },
+          "C_PROBE_OUT0_INIT_VAL": {
+            "value": "0xc00000000000"
+          },
+          "C_PROBE_OUT0_WIDTH": {
+            "value": "48"
+          },
+          "C_PROBE_OUT1_INIT_VAL": {
+            "value": "0xc00000000000"
+          },
+          "C_PROBE_OUT1_WIDTH": {
+            "value": "48"
+          },
+          "C_PROBE_OUT2_INIT_VAL": {
+            "value": "0x3"
+          },
+          "C_PROBE_OUT2_WIDTH": {
+            "value": "2"
+          },
+          "C_PROBE_OUT3_WIDTH": {
+            "value": "1"
+          }
+        }
+      },
+      "dac00_phase_zero": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "design_1_dac00_phase_zero_0",
+        "xci_path": "ip\\design_1_dac00_phase_zero_0\\design_1_dac00_phase_zero_0.xci",
+        "inst_hier_path": "dac00_phase_zero",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          },
+          "CONST_WIDTH": {
+            "value": "18"
+          }
+        }
+      },
+      "dac00_phase_rst_zero": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "design_1_dac00_phase_rst_zero_0",
+        "xci_path": "ip\\design_1_dac00_phase_rst_zero_0\\design_1_dac00_phase_rst_zero_0.xci",
+        "inst_hier_path": "dac00_phase_rst_zero",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          },
+          "CONST_WIDTH": {
+            "value": "1"
+          }
+        }
+      },
+      "dac02_phase_zero": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "design_1_dac02_phase_zero_0",
+        "xci_path": "ip\\design_1_dac02_phase_zero_0\\design_1_dac02_phase_zero_0.xci",
+        "inst_hier_path": "dac02_phase_zero",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          },
+          "CONST_WIDTH": {
+            "value": "18"
+          }
+        }
+      },
+      "dac02_phase_rst_zero": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "design_1_dac02_phase_rst_zero_0",
+        "xci_path": "ip\\design_1_dac02_phase_rst_zero_0\\design_1_dac02_phase_rst_zero_0.xci",
+        "inst_hier_path": "dac02_phase_rst_zero",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          },
+          "CONST_WIDTH": {
+            "value": "1"
+          }
+        }
       }
     },
     "interface_nets": {
@@ -5293,6 +5705,30 @@
       }
     },
     "nets": {
+      "adc0_01_phase_rst_zero_dout": {
+        "ports": [
+          "adc0_01_phase_rst_zero/dout",
+          "usp_rf_data_converter_0/adc0_01_nco_phase_rst"
+        ]
+      },
+      "adc0_01_phase_zero_dout": {
+        "ports": [
+          "adc0_01_phase_zero/dout",
+          "usp_rf_data_converter_0/adc0_01_nco_phase"
+        ]
+      },
+      "adc0_23_phase_rst_zero_dout": {
+        "ports": [
+          "adc0_23_phase_rst_zero/dout",
+          "usp_rf_data_converter_0/adc0_23_nco_phase_rst"
+        ]
+      },
+      "adc0_23_phase_zero_dout": {
+        "ports": [
+          "adc0_23_phase_zero/dout",
+          "usp_rf_data_converter_0/adc0_23_nco_phase"
+        ]
+      },
       "axi_quad_spi_0_io0_o": {
         "ports": [
           "axi_quad_spi_0/io0_o",
@@ -5334,7 +5770,11 @@
           "axi_interconnect_0/S00_ACLK",
           "axi_interconnect_0/M00_ACLK",
           "axi_interconnect_0/M01_ACLK",
-          "axi_interconnect_0/M02_ACLK"
+          "axi_interconnect_0/M02_ACLK",
+          "vio_adc_freq/clk",
+          "vio_dac_freq/clk",
+          "nco_adc_ctrl/clk",
+          "nco_dac_ctrl/clk"
         ]
       },
       "clk_wiz_1_clk_out3_10M": {
@@ -5378,6 +5818,30 @@
           "usp_rf_data_converter_0/s0_axis_aresetn"
         ]
       },
+      "dac00_phase_rst_zero_dout": {
+        "ports": [
+          "dac00_phase_rst_zero/dout",
+          "usp_rf_data_converter_0/dac00_nco_phase_rst"
+        ]
+      },
+      "dac00_phase_zero_dout": {
+        "ports": [
+          "dac00_phase_zero/dout",
+          "usp_rf_data_converter_0/dac00_nco_phase"
+        ]
+      },
+      "dac02_phase_rst_zero_dout": {
+        "ports": [
+          "dac02_phase_rst_zero/dout",
+          "usp_rf_data_converter_0/dac02_nco_phase_rst"
+        ]
+      },
+      "dac02_phase_zero_dout": {
+        "ports": [
+          "dac02_phase_zero/dout",
+          "usp_rf_data_converter_0/dac02_nco_phase"
+        ]
+      },
       "emio_gpio_i_0_1": {
         "ports": [
           "emio_gpio_i",
@@ -5388,6 +5852,94 @@
         "ports": [
           "spi_miso",
           "axi_quad_spi_0/io1_i"
+        ]
+      },
+      "nco_adc_ctrl_completed_count": {
+        "ports": [
+          "nco_adc_ctrl/completed_count",
+          "vio_adc_freq/probe_in1"
+        ]
+      },
+      "nco_adc_ctrl_nco_en0": {
+        "ports": [
+          "nco_adc_ctrl/nco_en0",
+          "usp_rf_data_converter_0/adc0_01_nco_update_en"
+        ]
+      },
+      "nco_adc_ctrl_nco_en1": {
+        "ports": [
+          "nco_adc_ctrl/nco_en1",
+          "usp_rf_data_converter_0/adc0_23_nco_update_en"
+        ]
+      },
+      "nco_adc_ctrl_nco_freq0": {
+        "ports": [
+          "nco_adc_ctrl/nco_freq0",
+          "vio_adc_freq/probe_in2",
+          "usp_rf_data_converter_0/adc0_01_nco_freq"
+        ]
+      },
+      "nco_adc_ctrl_nco_freq1": {
+        "ports": [
+          "nco_adc_ctrl/nco_freq1",
+          "vio_adc_freq/probe_in3",
+          "usp_rf_data_converter_0/adc0_23_nco_freq"
+        ]
+      },
+      "nco_adc_ctrl_nco_req": {
+        "ports": [
+          "nco_adc_ctrl/nco_req",
+          "usp_rf_data_converter_0/adc0_nco_update_req"
+        ]
+      },
+      "nco_adc_ctrl_status": {
+        "ports": [
+          "nco_adc_ctrl/status",
+          "vio_adc_freq/probe_in0"
+        ]
+      },
+      "nco_dac_ctrl_completed_count": {
+        "ports": [
+          "nco_dac_ctrl/completed_count",
+          "vio_dac_freq/probe_in1"
+        ]
+      },
+      "nco_dac_ctrl_nco_en0": {
+        "ports": [
+          "nco_dac_ctrl/nco_en0",
+          "usp_rf_data_converter_0/dac00_nco_update_en"
+        ]
+      },
+      "nco_dac_ctrl_nco_en1": {
+        "ports": [
+          "nco_dac_ctrl/nco_en1",
+          "usp_rf_data_converter_0/dac02_nco_update_en"
+        ]
+      },
+      "nco_dac_ctrl_nco_freq0": {
+        "ports": [
+          "nco_dac_ctrl/nco_freq0",
+          "vio_dac_freq/probe_in2",
+          "usp_rf_data_converter_0/dac00_nco_freq"
+        ]
+      },
+      "nco_dac_ctrl_nco_freq1": {
+        "ports": [
+          "nco_dac_ctrl/nco_freq1",
+          "vio_dac_freq/probe_in3",
+          "usp_rf_data_converter_0/dac02_nco_freq"
+        ]
+      },
+      "nco_dac_ctrl_nco_req": {
+        "ports": [
+          "nco_dac_ctrl/nco_req",
+          "usp_rf_data_converter_0/dac0_nco_update_req"
+        ]
+      },
+      "nco_dac_ctrl_status": {
+        "ports": [
+          "nco_dac_ctrl/status",
+          "vio_dac_freq/probe_in0"
         ]
       },
       "rst_ps8_0_100M_peripheral_aresetn1": {
@@ -5402,7 +5954,9 @@
           "axi_interconnect_0/S00_ARESETN",
           "axi_interconnect_0/M00_ARESETN",
           "axi_interconnect_0/M01_ARESETN",
-          "axi_interconnect_0/M02_ARESETN"
+          "axi_interconnect_0/M02_ARESETN",
+          "nco_adc_ctrl/rst_n",
+          "nco_dac_ctrl/rst_n"
         ]
       },
       "sys_rstn_1": {
@@ -5410,6 +5964,12 @@
           "sys_rstn",
           "clk_wiz_0/resetn",
           "clk_wiz_1/resetn"
+        ]
+      },
+      "usp_rf_data_converter_0_adc0_nco_update_busy": {
+        "ports": [
+          "usp_rf_data_converter_0/adc0_nco_update_busy",
+          "nco_adc_ctrl/nco_busy"
         ]
       },
       "usp_rf_data_converter_0_clk_adc0": {
@@ -5422,6 +5982,60 @@
         "ports": [
           "usp_rf_data_converter_0/clk_dac0",
           "clk_wiz_dac/clk_in1"
+        ]
+      },
+      "usp_rf_data_converter_0_dac0_nco_update_busy": {
+        "ports": [
+          "usp_rf_data_converter_0/dac0_nco_update_busy",
+          "nco_dac_ctrl/nco_busy"
+        ]
+      },
+      "vio_adc_freq_probe_out0": {
+        "ports": [
+          "vio_adc_freq/probe_out0",
+          "nco_adc_ctrl/freq0"
+        ]
+      },
+      "vio_adc_freq_probe_out1": {
+        "ports": [
+          "vio_adc_freq/probe_out1",
+          "nco_adc_ctrl/freq1"
+        ]
+      },
+      "vio_adc_freq_probe_out2": {
+        "ports": [
+          "vio_adc_freq/probe_out2",
+          "nco_adc_ctrl/channel_mask"
+        ]
+      },
+      "vio_adc_freq_probe_out3": {
+        "ports": [
+          "vio_adc_freq/probe_out3",
+          "nco_adc_ctrl/apply_toggle"
+        ]
+      },
+      "vio_dac_freq_probe_out0": {
+        "ports": [
+          "vio_dac_freq/probe_out0",
+          "nco_dac_ctrl/freq0"
+        ]
+      },
+      "vio_dac_freq_probe_out1": {
+        "ports": [
+          "vio_dac_freq/probe_out1",
+          "nco_dac_ctrl/freq1"
+        ]
+      },
+      "vio_dac_freq_probe_out2": {
+        "ports": [
+          "vio_dac_freq/probe_out2",
+          "nco_dac_ctrl/channel_mask"
+        ]
+      },
+      "vio_dac_freq_probe_out3": {
+        "ports": [
+          "vio_dac_freq/probe_out3",
+          "nco_dac_ctrl/apply_toggle"
         ]
       },
       "zynq_ultra_ps_e_0_emio_gpio_o": {

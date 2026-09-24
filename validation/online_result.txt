@@ -1,0 +1,4 @@
+PASS complex three tap
+PASS all 300 taps, signed extremes, online reload
+PASS ONLINE: AXI count/CRC/error/abort and real FIR numerical comparison
+XSim finish time 323595 ns. Real FIR Compiler 7.2 Rev20, Vivado 2023.2.

@@ -39,3 +39,9 @@
 
 *.bda
 *.rpx
+
+# Disposable online verification project
+/validation/online_check/
+
+# MIF copies emitted at the project root during RTL elaboration
+/*.mif

@@ -1,6 +1,12 @@
 `timescale 1ns / 1ps
 
 module complex_fir_stream_buffer (
+    input wire ip_rst_n,
+    input wire [3:0] reload_valid,config_valid,
+    output wire [3:0] reload_ready,config_ready,
+    input wire reload_last,
+    input wire [23:0] reload_re,reload_im,
+    output wire [3:0] reload_missing,reload_unexpected,
     input  wire        clk,
     input  wire        rst_n,
     input  wire        s_valid,
@@ -13,8 +19,8 @@ module complex_fir_stream_buffer (
     output wire        fifo_underflow_error
 );
 
-    // 300-tap FIR Compiler latency is 309 cycles.  Keep the in-flight credit
-    // window larger than the pipeline so continuous 200 MHz traffic can fill it.
+    // Keep the in-flight credit
+    // window larger than the generated pipeline for continuous 200 MHz traffic.
     localparam integer FIFO_DEPTH = 512;
     localparam integer FIFO_COUNT_WIDTH = $clog2(FIFO_DEPTH) + 1;
     wire core_in_ready;
@@ -54,6 +60,11 @@ module complex_fir_stream_buffer (
     assign fifo_underflow_error = fifo_underflow;
 
     complex_fir_calibration core_inst (
+        .ip_rst_n(ip_rst_n),.reload_valid(reload_valid),.config_valid(config_valid),
+        .reload_ready(reload_ready),.config_ready(config_ready),.reload_last(reload_last),
+        .reload_re(reload_re),.reload_im(reload_im),
+        .reload_missing(reload_missing),.reload_unexpected(reload_unexpected),
+
         .clk(clk), .rst_n(rst_n),
         .in_valid(core_in_valid), .in_ready(core_in_ready), .in_data(s_data),
         .out_valid(core_out_valid), .out_data(core_out_data)

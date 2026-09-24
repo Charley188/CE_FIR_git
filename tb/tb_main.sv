@@ -13,7 +13,10 @@ module tb_main;
   wire [255:0] dac_data;
   wire dac_valid,overflow,underflow;
   reg dac_ready=0;
+  `include "online_coeff_tb.vh"
   adda_first_path_chain dut (
+    .update_hold(hold),.coeff_we(we),.coeff_addr(addr),.coeff_re(cr),.coeff_im(ci),
+    .coeff_match(match),.load_quiet(quiet),.path_running(running),.reload_fault(fault),
     .clk_adc0(adc_clk),.clk_200m(alg_clk),.clk_dac0(dac_clk),
     .pl_rstn(rst_n),.rf_adc_axis_rstn(rst_n),.clk_200m_locked(rst_n),.rf_dac_axis_rstn(rst_n),
     .m00_axis_tdata(adc_i),.m00_axis_tvalid(adc_valid),.m00_axis_tready(i_ready),
@@ -58,6 +61,8 @@ module tb_main;
   initial begin
     wait(loaded);repeat(32) @(negedge adc_clk);rst_n=1;
     repeat(64) @(negedge adc_clk);
+    repeat(64) @(negedge axi_clk); // XPM command/reply FIFO reset release
+    load_coefficients();
     for(b=0;b<ns/8;b=b+1) begin
       for(l=0;l<8;l=l+1) begin adc_i[l*16+:16]=xi[b*8+l];adc_q[l*16+:16]=xq[b*8+l];end
       adc_valid=1;

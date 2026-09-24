@@ -6,6 +6,8 @@
  */
 #include "parameters.h"
 #include <stdio.h>
+#include "ce_nco.h"
+#include "ce_coeff.h"
 
 #include "delay.h"
 #include "xgpiops.h"
@@ -236,6 +238,8 @@ int main(void)
 	 usleep(100);
 #endif
 
+	if (ce_nco_vio_init() != 0) return -1;
+	ce_coeff_run();
 	printf(">> Done.\r\n");
 
 	while(1);

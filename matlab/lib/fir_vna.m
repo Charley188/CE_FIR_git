@@ -1,5 +1,5 @@
 function result = fir_vna(root,mode,cfg)
-% Single-channel measured-bypass calibration; fixed coefficients, no PS reload.
+% Single-channel measured-bypass calibration; exports MEM for manual transfer to PS.
 assert(ismember(mode,[1 2]));N=cfg.tap_count;Fs=cfg.sample_rate_hz;
 if mode==1
     h=zeros(N,1);h(1)=1;kind='bypass';
@@ -31,6 +31,7 @@ q=round([real(h),imag(h)]*2^16);
 assert(all(isfinite(q(:))) && all(q(:)>=-2^17 & q(:)<=2^17-1),'Quantized coefficients exceed signed18; reduce target_gain');
 out=fullfile(root,'matlab','vna','output',kind);if ~isfolder(out),mkdir(out);end
 write_coe_file(fullfile(out,'fir_coef_re.coe'),q(:,1));write_coe_file(fullfile(out,'fir_coef_im.coe'),q(:,2));
+write_fir_mem(fullfile(out,'h_re.mem'),q(:,1));write_fir_mem(fullfile(out,'h_im.mem'),q(:,2));
 writematrix([(0:N-1)',q],fullfile(out,'taps.csv'));
 if mode==2
     hq=complex(q(:,1),q(:,2))/2^16;G=D*hq;after=H.*G;

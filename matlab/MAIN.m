@@ -1,5 +1,5 @@
 % MAIN: edit MODE, then click Run. No external runner is needed.
-% 1: generate active COE + ADC input. 2: fixed-point model + FPGA comparison.
+% 1: generate active COE/MEM + ADC input. 2: fixed-point model + FPGA comparison.
 MODE = 1;
 COEFFICIENT_SOURCE = 'standard'; % standard | current | vna_bypass | vna_compensated
 BASE_SAMPLES = 2048;

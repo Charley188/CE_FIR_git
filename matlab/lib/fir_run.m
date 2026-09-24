@@ -20,6 +20,8 @@ if mode==1
         otherwise,error('Unknown coefficient_source');
     end
     [cr,ci,interp]=load_coefficients(coeff_dir,cfg.tap_count);
+    write_fir_mem(fullfile(in_dir,'h_re.mem'),cr);
+    write_fir_mem(fullfile(in_dir,'h_im.mem'),ci);
     validateattributes(cfg.base_samples,{'numeric'},{'scalar','integer','>=',32});
     validateattributes(cfg.amplitude_lsb,{'numeric'},{'scalar','positive','<=',16000});
     stream=RandStream('mt19937ar','Seed',cfg.seed);
@@ -38,9 +40,9 @@ if mode==1
     fid=fopen(fullfile(in_dir,'config.txt'),'wt');assert(fid>=0);fprintf(fid,'%d\n',size(x,1));fclose(fid);
     result=struct('samples',size(x,1),'tap_count',cfg.tap_count);
     fprintf('MODE1_READY: %d ADC samples, %d taps.\nCOE: %s\nInput: %s\n',size(x,1),cfg.tap_count,coeff_dir,in_dir);
-    fprintf('If COE changed: re-customize FIR IP in Vivado, generate output products, and check rtl/fir_ip_layout.vh.\n');
+    fprintf('Online FIR MEM: %s. Manually copy h_re.mem / h_im.mem to ps/src/coeff, then Vitis Clean > Build > Run.\n',in_dir);
     fprintf('Integer coefficient symmetry: real=%d imag=%d (1=symmetric).\n',isequal(cr,flipud(cr)),isequal(ci,flipud(ci)));
-    if cfg.tap_count==300, fprintf('300tap: symmetric IP columns=150; nonsymmetric IP columns=150,150.\n');end
+    fprintf('Fixed reloadable IP: 300 taps, non-symmetric, 48-bit AXI output. No IP regeneration when changing taps.\n');
     if cfg.show_figures
         figure('Name','FIR mode 1: coefficients and stimulus','Color','w');tiledlayout(2,1);
         nexttile;plot(cr/2^16);hold on;plot(ci/2^16);grid on;legend('Real taps','Imag taps');xlabel('Tap');

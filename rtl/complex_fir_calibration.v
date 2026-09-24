@@ -5,6 +5,12 @@ module complex_fir_calibration #(
     parameter integer COEF_FRAC  = 16,
     parameter integer NTAPS      = 300
 ) (
+    input wire ip_rst_n,
+    input wire [3:0] reload_valid,config_valid,
+    output wire [3:0] reload_ready,config_ready,
+    input wire reload_last,
+    input wire [23:0] reload_re,reload_im,
+    output wire [3:0] reload_missing,reload_unexpected,
     input  wire        clk,
     input  wire        rst_n,
     input  wire        in_valid,
@@ -24,14 +30,14 @@ module complex_fir_calibration #(
     end
 `endif
 
-    // A 300-tap impulse real filter and zero imaginary filter can differ by 153 cycles.
+    // Independent queues retain ordering even if the four FIRs accept at different cycles.
     localparam integer JOIN_DEPTH = (NTAPS > 64) ? 256 : 64;
     localparam integer JOIN_PTR_WIDTH = $clog2(JOIN_DEPTH);
 `ifndef SYNTHESIS
     initial begin
-        if (`FIR_RE_TDATA_WIDTH < 16 || `FIR_RE_TDATA_WIDTH > 40 ||
-            `FIR_IM_TDATA_WIDTH < 16 || `FIR_IM_TDATA_WIDTH > 40)
-            $fatal(1, "FIR layout width outside supported 16..40 bits");
+        if (`FIR_RE_TDATA_WIDTH < 16 || `FIR_RE_TDATA_WIDTH > 48 ||
+            `FIR_IM_TDATA_WIDTH < 16 || `FIR_IM_TDATA_WIDTH > 48)
+            $fatal(1, "FIR layout width outside supported 16..48 bits");
     end
 `endif
     localparam integer RE_WIDTH = `FIR_RE_TDATA_WIDTH;
@@ -58,6 +64,24 @@ module complex_fir_calibration #(
     wire [IM_WIDTH-1:0] fir_q_ci;
     wire [IM_WIDTH-1:0] fir_i_ci;
     wire [RE_WIDTH-1:0] fir_q_cr;
+
+    // Optional simulation acceleration: after 16 reset clocks the IP state
+    // is stable; staging/AXI clocks continue. Not used in synthesis.
+    wire fir_clk;
+`ifdef CE_SIM_FAST_RESET
+`ifndef SYNTHESIS
+    reg [4:0] reset_clocks=0;
+    always @(negedge clk) begin
+        if(ip_rst_n) reset_clocks<=0;
+        else if(reset_clocks<16) reset_clocks<=reset_clocks+1'b1;
+    end
+    assign fir_clk=clk && (ip_rst_n || reset_clocks<16);
+`else
+    assign fir_clk=clk;
+`endif
+`else
+    assign fir_clk=clk;
+`endif
 
     // Four real FIRs implement (I+jQ)(Cr+jCi): I*Cr-Q*Ci and I*Ci+Q*Cr.
     wire [3:0] fir_ready = {ready_q_cr, ready_i_ci, ready_q_ci, ready_i_cr};
@@ -101,43 +125,71 @@ module complex_fir_calibration #(
     end
 
     fir_coef_re fir_i_cr_path (
-        .aresetn            (rst_n),
-        .aclk               (clk),
+        .aresetn            (ip_rst_n),
+        .aclk               (fir_clk),
         .s_axis_data_tvalid (fir_input_valid[0]),
         .s_axis_data_tready (ready_i_cr),
         .s_axis_data_tdata  (input_i),
         .m_axis_data_tvalid (valid_i_cr),
-        .m_axis_data_tdata  (fir_i_cr)
+        .m_axis_data_tdata  (fir_i_cr),
+        .s_axis_reload_tvalid(reload_valid[0]),
+        .s_axis_reload_tready(reload_ready[0]),
+        .s_axis_reload_tdata(reload_re), .s_axis_reload_tlast(reload_last),
+        .s_axis_config_tvalid(config_valid[0]),
+        .s_axis_config_tready(config_ready[0]), .s_axis_config_tdata(8'b0),
+        .event_s_reload_tlast_missing(reload_missing[0]),
+        .event_s_reload_tlast_unexpected(reload_unexpected[0])
     );
 
     fir_coef_im fir_q_ci_path (
-        .aresetn            (rst_n),
-        .aclk               (clk),
+        .aresetn            (ip_rst_n),
+        .aclk               (fir_clk),
         .s_axis_data_tvalid (fir_input_valid[1]),
         .s_axis_data_tready (ready_q_ci),
         .s_axis_data_tdata  (input_q),
         .m_axis_data_tvalid (valid_q_ci),
-        .m_axis_data_tdata  (fir_q_ci)
+        .m_axis_data_tdata  (fir_q_ci),
+        .s_axis_reload_tvalid(reload_valid[1]),
+        .s_axis_reload_tready(reload_ready[1]),
+        .s_axis_reload_tdata(reload_im), .s_axis_reload_tlast(reload_last),
+        .s_axis_config_tvalid(config_valid[1]),
+        .s_axis_config_tready(config_ready[1]), .s_axis_config_tdata(8'b0),
+        .event_s_reload_tlast_missing(reload_missing[1]),
+        .event_s_reload_tlast_unexpected(reload_unexpected[1])
     );
 
     fir_coef_im fir_i_ci_path (
-        .aresetn            (rst_n),
-        .aclk               (clk),
+        .aresetn            (ip_rst_n),
+        .aclk               (fir_clk),
         .s_axis_data_tvalid (fir_input_valid[2]),
         .s_axis_data_tready (ready_i_ci),
         .s_axis_data_tdata  (input_i),
         .m_axis_data_tvalid (valid_i_ci),
-        .m_axis_data_tdata  (fir_i_ci)
+        .m_axis_data_tdata  (fir_i_ci),
+        .s_axis_reload_tvalid(reload_valid[2]),
+        .s_axis_reload_tready(reload_ready[2]),
+        .s_axis_reload_tdata(reload_im), .s_axis_reload_tlast(reload_last),
+        .s_axis_config_tvalid(config_valid[2]),
+        .s_axis_config_tready(config_ready[2]), .s_axis_config_tdata(8'b0),
+        .event_s_reload_tlast_missing(reload_missing[2]),
+        .event_s_reload_tlast_unexpected(reload_unexpected[2])
     );
 
     fir_coef_re fir_q_cr_path (
-        .aresetn            (rst_n),
-        .aclk               (clk),
+        .aresetn            (ip_rst_n),
+        .aclk               (fir_clk),
         .s_axis_data_tvalid (fir_input_valid[3]),
         .s_axis_data_tready (ready_q_cr),
         .s_axis_data_tdata  (input_q),
         .m_axis_data_tvalid (valid_q_cr),
-        .m_axis_data_tdata  (fir_q_cr)
+        .m_axis_data_tdata  (fir_q_cr),
+        .s_axis_reload_tvalid(reload_valid[3]),
+        .s_axis_reload_tready(reload_ready[3]),
+        .s_axis_reload_tdata(reload_re), .s_axis_reload_tlast(reload_last),
+        .s_axis_config_tvalid(config_valid[3]),
+        .s_axis_config_tready(config_ready[3]), .s_axis_config_tdata(8'b0),
+        .event_s_reload_tlast_missing(reload_missing[3]),
+        .event_s_reload_tlast_unexpected(reload_unexpected[3])
     );
 
     wire [3:0] fir_valid = {valid_q_cr, valid_i_ci, valid_q_ci, valid_i_cr};
@@ -145,10 +197,10 @@ module complex_fir_calibration #(
     // The four FIRs may accept and return a transaction on different cycles.
     // Per-path queues preserve ordering; a result is joined only when all four
     // queue heads belong to the same next transaction.
-    reg [40:0] queue_i_cr [0:JOIN_DEPTH-1];
-    reg [40:0] queue_q_ci [0:JOIN_DEPTH-1];
-    reg [40:0] queue_i_ci [0:JOIN_DEPTH-1];
-    reg [40:0] queue_q_cr [0:JOIN_DEPTH-1];
+    reg [48:0] queue_i_cr [0:JOIN_DEPTH-1];
+    reg [48:0] queue_q_ci [0:JOIN_DEPTH-1];
+    reg [48:0] queue_i_ci [0:JOIN_DEPTH-1];
+    reg [48:0] queue_q_cr [0:JOIN_DEPTH-1];
     reg [JOIN_PTR_WIDTH-1:0] wr_i_cr, wr_q_ci, wr_i_ci, wr_q_cr;
     reg [JOIN_PTR_WIDTH-1:0] rd_i_cr, rd_q_ci, rd_i_ci, rd_q_cr;
     reg [JOIN_PTR_WIDTH:0] count_i_cr, count_q_ci, count_i_ci, count_q_cr;
@@ -156,23 +208,23 @@ module complex_fir_calibration #(
                           (count_i_ci != 0) && (count_q_cr != 0);
     wire join_pop = rst_n && join_available;
 
-    wire signed [40:0] fir_i_cr_ext = queue_i_cr[rd_i_cr];
-    wire signed [40:0] fir_q_ci_ext = queue_q_ci[rd_q_ci];
-    wire signed [40:0] fir_i_ci_ext = queue_i_ci[rd_i_ci];
-    wire signed [40:0] fir_q_cr_ext = queue_q_cr[rd_q_cr];
-    wire signed [40:0] acc_i = fir_i_cr_ext - fir_q_ci_ext;
-    wire signed [40:0] acc_q = fir_i_ci_ext + fir_q_cr_ext;
+    wire signed [48:0] fir_i_cr_ext = queue_i_cr[rd_i_cr];
+    wire signed [48:0] fir_q_ci_ext = queue_q_ci[rd_q_ci];
+    wire signed [48:0] fir_i_ci_ext = queue_i_ci[rd_i_ci];
+    wire signed [48:0] fir_q_cr_ext = queue_q_cr[rd_q_cr];
+    wire signed [48:0] acc_i = fir_i_cr_ext - fir_q_ci_ext;
+    wire signed [48:0] acc_q = fir_i_ci_ext + fir_q_cr_ext;
 
     wire signed [15:0] out_i;
     wire signed [15:0] out_q;
 
     // The shared saturator performs the required 2^16 scaling and signed-16 clamping.
-    signed_saturate_16 saturate_i (
+    signed_saturate_16 #(.WIDTH(49)) saturate_i (
         .in_value  (acc_i),
         .out_value (out_i)
     );
 
-    signed_saturate_16 saturate_q (
+    signed_saturate_16 #(.WIDTH(49)) saturate_q (
         .in_value  (acc_q),
         .out_value (out_q)
     );
@@ -189,19 +241,19 @@ module complex_fir_calibration #(
             count_i_ci <= 0; count_q_cr <= 0;
         end else begin
             if (valid_i_cr) begin
-                queue_i_cr[wr_i_cr] <= {{(41-RE_WIDTH){fir_i_cr[RE_WIDTH-1]}},fir_i_cr};
+                queue_i_cr[wr_i_cr] <= {{(49-RE_WIDTH){fir_i_cr[RE_WIDTH-1]}},fir_i_cr};
                 wr_i_cr <= wr_i_cr + 1'b1;
             end
             if (valid_q_ci) begin
-                queue_q_ci[wr_q_ci] <= {{(41-IM_WIDTH){fir_q_ci[IM_WIDTH-1]}},fir_q_ci};
+                queue_q_ci[wr_q_ci] <= {{(49-IM_WIDTH){fir_q_ci[IM_WIDTH-1]}},fir_q_ci};
                 wr_q_ci <= wr_q_ci + 1'b1;
             end
             if (valid_i_ci) begin
-                queue_i_ci[wr_i_ci] <= {{(41-IM_WIDTH){fir_i_ci[IM_WIDTH-1]}},fir_i_ci};
+                queue_i_ci[wr_i_ci] <= {{(49-IM_WIDTH){fir_i_ci[IM_WIDTH-1]}},fir_i_ci};
                 wr_i_ci <= wr_i_ci + 1'b1;
             end
             if (valid_q_cr) begin
-                queue_q_cr[wr_q_cr] <= {{(41-RE_WIDTH){fir_q_cr[RE_WIDTH-1]}},fir_q_cr};
+                queue_q_cr[wr_q_cr] <= {{(49-RE_WIDTH){fir_q_cr[RE_WIDTH-1]}},fir_q_cr};
                 wr_q_cr <= wr_q_cr + 1'b1;
             end
             if (join_pop) begin

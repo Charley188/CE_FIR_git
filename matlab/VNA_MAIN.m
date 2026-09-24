@@ -1,5 +1,5 @@
 % Single-channel VNA calibration. Edit MODE and measurement path, then click Run.
-% 1: H=1 bypass COE. 2: measured bypass -> quantized correction COE.
+% 1: H=1 bypass COE/MEM. 2: measured bypass -> quantized correction COE/MEM.
 MODE = 1;
 matlab_dir = fileparts(mfilename('fullpath'));
 addpath(matlab_dir,fullfile(matlab_dir,'lib'));

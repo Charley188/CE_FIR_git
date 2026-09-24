@@ -1,9 +1,9 @@
-module signed_saturate_16 (
-    input  wire signed [40:0] in_value,
+module signed_saturate_16 #(parameter integer WIDTH=41) (
+    input  wire signed [WIDTH-1:0] in_value,
     output reg  signed [15:0] out_value
 );
 
-    reg signed [40:0] scaled_value;
+    reg signed [WIDTH-1:0] scaled_value;
 
     always @* begin
         // Keep the input signed so >>> propagates its sign through the required 16-bit fixed-point scaling.

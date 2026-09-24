@@ -1,0 +1,5 @@
+PASS samples=28608 decimated=2384 fir=2384 beats=3576 max_join=1
+PASS=1
+decimator samples=2384 max_error_lsb=0 rms_error_lsb=0
+fir samples=2384 max_error_lsb=0 rms_error_lsb=0
+dac samples=28608 max_error_lsb=0 rms_error_lsb=0

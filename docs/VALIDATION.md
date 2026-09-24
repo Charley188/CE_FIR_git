@@ -1,3 +1,23 @@
+# 在线加载与调频验证（2026-09-24）
+
+环境：Vivado/XSim 2023.2、MATLAB R2025b、Vitis ARM GCC。
+
+已完成：
+
+- 接入在线加载后的真实 ADDA 主 TB 通过：28608 ADC样点、2384抽取/FIR样点、3576 DAC beats；无FIFO/背压/顺序错误。MATLAB模式二的抽取、FIR、DAC逐点误差均为0 LSB，见 `validation/main_online_result.txt`。
+- FIR Compiler 两套 IP 改为可重载、非对称300tap，输出实际有效43位、AXI补齐48位。检查两份生成的 reload_order，均精确为299..0。
+- `validation/tb_online.sv` 使用真实 FIR Compiler + XPM + 生产AXI控制器：非对称复数三tap、全部300tap、signed18边界值、连续两次在线换系数，1400个复数输出与整数卷积/饱和参考完全一致。
+- 同一测试检查未装载START、不完整SEAL、错误CRC拒绝、恢复重新加载、RAM读回/计数/CRC及ABORT；输出 `PASS ONLINE`。
+- 仿真仅在FIR持续复位16个时钟后停止其无效复位时钟；AXI、CDC和staging RAM持续运行，实际重载和数据计算使用真实IP。该选项不影响综合。
+- NCO控制器源码、控制器参数及VIO接口与FFT参考工程一致；默认频点保持FIR原配置，两路均为ADC +1.2GHz、DAC -1.2GHz。Vivado BD校验/生成成功；整板RTL展开通过，无Error/Critical Warning，保留原板级普通告警。
+- PS main.c、ce_coeff.c、ce_coeff_files.c 使用ARM GCC和现有FFT BSP编译通过。正式ELF需使用本工程新XSA生成的BSP；未复用旧ELF。原main.c三个未使用变量告警仍在。
+- MATLAB全300tap signed18边界累加与饱和测试通过，已去除旧41位模型上限。
+- MATLAB MAIN模式一输出28608个ADC样点及两份300行MEM。VNA bypass导出首tap=10000、其余0，虚部全0；运行前后PS MEM哈希一致，确认不会自动复制到PS。
+
+本轮不包含完整综合/布局布线、时序收敛、新bit/XSA生成或板上RF/NCO测量。原固定系数版本记录如下，仅作为历史证据，不能替代本轮重载结构的验证。
+
+---
+
 # 验证记录（2026-09-23）
 
 环境：Vivado/XSim 2023.2；MATLAB R2025b。原工程保留，来源清单中的原文件摘要核对一致。

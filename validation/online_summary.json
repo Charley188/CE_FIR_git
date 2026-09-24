@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-24",
+  "main_tb": "PASS",
+  "samples_adc": 28608,
+  "samples_fir": 2384,
+  "dac_beats": 3576,
+  "max_error_lsb": {
+    "decimator": 0,
+    "fir": 0,
+    "dac": 0
+  },
+  "online_real_ip": "PASS 3-tap + 300-tap, signed extremes, CRC/count/abort",
+  "board_bd": "validated/generated",
+  "board_rtl": "elaborated",
+  "ps": "ARM GCC compile only, reference BSP",
+  "matlab_vna_mem": "PASS, PS files unchanged",
+  "full_implementation": false,
+  "hardware_measurement": false
+}

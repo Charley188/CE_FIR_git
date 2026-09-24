@@ -1,6 +1,6 @@
-// Manually maintained. Read generated IP m_axis_data_tdata widths after changing COE.
+// Fixed reloadable Non_Symmetric 300-tap configuration: 48-bit AXI padding.
 `ifndef FIR_IP_LAYOUT_VH
 `define FIR_IP_LAYOUT_VH
-`define FIR_RE_TDATA_WIDTH 40
-`define FIR_IM_TDATA_WIDTH 16
+`define FIR_RE_TDATA_WIDTH 48
+`define FIR_IM_TDATA_WIDTH 48
 `endif

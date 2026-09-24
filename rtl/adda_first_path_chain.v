@@ -1,6 +1,10 @@
 `timescale 1ns / 1ps
 
 module adda_first_path_chain (
+    input wire update_hold,coeff_we,
+    input wire [10:0] coeff_addr,
+    input wire [17:0] coeff_re,coeff_im,
+    output wire coeff_match,load_quiet,path_running,reload_fault,
     input  wire         clk_adc0,
     input  wire         clk_200m,
     input  wire         clk_dac0,
@@ -21,8 +25,22 @@ module adda_first_path_chain (
     output wire         fifo_underflow
 );
 
-    wire chain_arst_n = pl_rstn & rf_adc_axis_rstn &
+    wire base_arst_n = pl_rstn & rf_adc_axis_rstn &
                         clk_200m_locked & rf_dac_axis_rstn;
+    wire reload_running,ip_rst_n;
+    wire [3:0] reload_valid,reload_ready,config_valid,config_ready,reload_missing,reload_unexpected;
+    wire reload_last;
+    wire [23:0] reload_re,reload_im;
+    wire chain_arst_n=base_arst_n && reload_running && !update_hold;
+    assign path_running=reload_running && alg_rst_n;
+    ce_fir_reload reload_inst(
+        .clk(clk_200m),.arst_n(base_arst_n),.update_hold(update_hold),
+        .coeff_we(coeff_we),.coeff_addr(coeff_addr),.coeff_re(coeff_re),.coeff_im(coeff_im),
+        .coeff_match(coeff_match),.load_quiet(load_quiet),.running(reload_running),.fault(reload_fault),
+        .ip_rst_n(ip_rst_n),.reload_valid(reload_valid),.reload_ready(reload_ready),
+        .reload_last(reload_last),.reload_re(reload_re),.reload_im(reload_im),
+        .config_valid(config_valid),.config_ready(config_ready),
+        .reload_missing(reload_missing),.reload_unexpected(reload_unexpected));
     wire adc_rst_n;
     wire alg_rst_n;
     wire dac_rst_n;
@@ -109,6 +127,11 @@ module adda_first_path_chain (
     assign fifo_rd_ready = fir_stream_started && fir_in_ready;
 
     complex_fir_stream_buffer fir_inst (
+        .ip_rst_n(ip_rst_n),.reload_valid(reload_valid),.config_valid(config_valid),
+        .reload_ready(reload_ready),.config_ready(config_ready),.reload_last(reload_last),
+        .reload_re(reload_re),.reload_im(reload_im),
+        .reload_missing(reload_missing),.reload_unexpected(reload_unexpected),
+
         .clk(clk_200m),
         .rst_n(alg_rst_n),
         .s_valid(fir_stream_started && fifo_rd_valid),

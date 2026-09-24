@@ -344,8 +344,25 @@ end
 
 
 
+wire update_hold,coeff_we,coeff_channel,coeff_match,load_quiet,path_running,reload_fault;
+wire [10:0] coeff_addr;
+wire [17:0] coeff_re,coeff_im;
+ce_fir_coeff_control coeff_control_inst(
+ .axi_clk(clk_100M),.alg_clk(clk_200M),.arst_n(pl_rstn),
+ .s_awaddr(param_m_axi_awaddr),.s_awvalid(param_m_axi_awvalid),.s_awready(param_m_axi_awready),
+ .s_wdata(param_m_axi_wdata),.s_wstrb(param_m_axi_wstrb),.s_wvalid(param_m_axi_wvalid),.s_wready(param_m_axi_wready),
+ .s_bresp(param_m_axi_bresp),.s_bvalid(param_m_axi_bvalid),.s_bready(param_m_axi_bready),
+ .s_araddr(param_m_axi_araddr),.s_arvalid(param_m_axi_arvalid),.s_arready(param_m_axi_arready),
+ .s_rdata(param_m_axi_rdata),.s_rresp(param_m_axi_rresp),.s_rvalid(param_m_axi_rvalid),.s_rready(param_m_axi_rready),
+ .update_hold(update_hold),.coeff_we(coeff_we),.coeff_channel(coeff_channel),
+ .coeff_addr(coeff_addr),.coeff_re(coeff_re),.coeff_im(coeff_im),
+ .coeff_match({1'b0,coeff_match}),.load_quiet({2{load_quiet}}),.path_running({2{path_running}}),
+ .path_fault({1'b0,reload_fault | first_path_fifo_overflow | first_path_fifo_underflow}));
+
 //first path
 adda_first_path_chain first_path_chain_inst (
+    .update_hold(update_hold),.coeff_we(coeff_we),.coeff_addr(coeff_addr),.coeff_re(coeff_re),.coeff_im(coeff_im),
+    .coeff_match(coeff_match),.load_quiet(load_quiet),.path_running(path_running),.reload_fault(reload_fault),
     .clk_adc0(clk_adc0), .clk_200m(clk_200M), .clk_dac0(clk_dac0),
     .pl_rstn(pl_rstn),
     .rf_adc_axis_rstn(rf_adc_axis_rstn),
