@@ -16,6 +16,13 @@ else
     result=fir_vna_design(freq-cfg.center_hz,H,cfg);
     h=result.h;q=result.q;kind='compensated';
 end
+% Board convention: conjugate once at the export boundary. Keep result.h/q
+% and RF-domain prediction in the mathematical design convention.
+h=conj(h);q(:,2)=-q(:,2);
+assert(all(q(:)>=-131072 & q(:)<=131071),...
+    'Conjugated taps exceed signed18; -131072 cannot be negated in signed18');
+result.hardware_conjugated=true;
+result.h_hw=h;result.q_hw=q;result.hq_hw=complex(q(:,1),q(:,2))/65536;
 out=fullfile(root,'matlab','vna','output',kind);if ~isfolder(out),mkdir(out);end
 write_coe_file(fullfile(out,'fir_coef_re.coe'),q(:,1));write_coe_file(fullfile(out,'fir_coef_im.coe'),q(:,2));
 write_fir_mem(fullfile(out,'h_re.mem'),q(:,1));write_fir_mem(fullfile(out,'h_im.mem'),q(:,2));
@@ -32,11 +39,12 @@ if mode==2
         'predicted_max_amplitude_error_db','predicted_phase_error_deg',...
         'passband_rms_error','quantized_error_l1','peak_gain_db','quantized_peak_gain'};
     for k=1:numel(names),fprintf(fid,'%s=%.12g\n',names{k},result.(names{k}));end
+    fprintf(fid,'hardware_conjugated=1\nprediction_convention=mathematical_design_taps\n');
     clear cleaner;
     if cfg.show_figures
         fig=figure('Name','FIR VNA: measured bypass / quantized correction','Color','w');tiledlayout(2,1);
         nexttile;plot(f/1e6,20*log10(max(abs([H,after,target])/result.target_gain,1e-12)));
-        grid on;legend('Measured bypass','Quantized prediction','Target');ylabel('Relative magnitude (dB)');xlabel('Baseband frequency (MHz)');
+        grid on;legend('Measured bypass','Design-domain prediction','Target');ylabel('Relative magnitude (dB)');xlabel('Baseband frequency (MHz)');
         nexttile;plot(f/1e6,angle(after./target)*180/pi);grid on;
         ylabel('Residual phase vs target delay (deg)');xlabel('Baseband frequency (MHz)');
         exportgraphics(fig,fullfile(out,'response.png'),'Resolution',150);
@@ -45,9 +53,11 @@ if mode==2
         result.baseline_ripple_db,result.predicted_ripple_db,result.predicted_level_offset_db,result.predicted_phase_error_deg);
     fprintf('Target gain %.6g; total target delay %d samples; regularization %.6g (%d attempts); peak bound %.6g dB.\n',...
         result.target_gain,result.target_delay_samples,result.regularization_used,result.attempts,result.peak_gain_db);
-    fprintf('Prediction uses quantized taps. Confirm actual correction by remeasuring S21.\n');
+    fprintf('Prediction uses mathematical design taps; hardware exports use their conjugate. Confirm actual correction by remeasuring S21.\n');
 end
+% Top-level h/q match exported hardware files; result.h/q (mode 2) retain design taps.
 save(fullfile(out,'design.mat'),'h','q','result','cfg');
+fprintf('Hardware export: Re unchanged, Im negated once. Do not conjugate these files again.\n');
 fprintf('VNA_MODE%d_READY: %s\nSelect vna_%s in MAIN mode 1 for digital verification.\nManually copy the two MEM files to PS; Clean > Build > Run.\n',mode,out,kind);
 end
 function [f,H]=load_response(path)

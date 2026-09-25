@@ -12,13 +12,13 @@ module adda_first_path_chain (
     input  wire         rf_adc_axis_rstn,
     input  wire         clk_200m_locked,
     input  wire         rf_dac_axis_rstn,
-    input  wire [127:0] m00_axis_tdata,
+    input  wire [15:0] m00_axis_tdata,
     input  wire         m00_axis_tvalid,
     output wire         m00_axis_tready,
-    input  wire [127:0] m01_axis_tdata,
+    input  wire [15:0] m01_axis_tdata,
     input  wire         m01_axis_tvalid,
     output wire         m01_axis_tready,
-    output wire [255:0] s00_axis_tdata,
+    output wire [31:0] s00_axis_tdata,
     output wire         s00_axis_tvalid,
     input  wire         s00_axis_tready,
     output wire         fifo_overflow,
@@ -47,10 +47,10 @@ module adda_first_path_chain (
 
     wire pair_valid = m00_axis_tvalid && m01_axis_tvalid;
     wire pair_ready;
-    wire decimator_s_ready;
-    wire decim_valid;
-    wire decim_ready;
-    wire [31:0] decim_data;
+    wire adc_pair_ready;
+    wire adc_pair_valid;
+    wire adc_fifo_ready;
+    wire [31:0] adc_pair_data;
     wire fifo_rd_valid;
     wire fifo_rd_ready;
     wire [31:0] fifo_rd_data;
@@ -60,14 +60,10 @@ module adda_first_path_chain (
     wire cal_valid;
     wire cal_ready;
     wire [31:0] cal_data;
-    wire interp_valid;
-    wire interp_ready;
-    wire [383:0] interp_data;
-    wire block_fifo_valid;
-    wire block_fifo_ready;
-    wire [383:0] block_fifo_data;
-    wire [255:0] gearbox_data;
-
+    wire dac_fifo_valid;
+    wire [31:0] dac_fifo_data;
+    wire [5:0] dac_fifo_level;
+    reg dac_started;
     wire sample_fifo_overflow;
     wire sample_fifo_underflow;
     wire fir_fifo_overflow;
@@ -87,28 +83,21 @@ module adda_first_path_chain (
         .clk(clk_dac0), .arst_n(chain_arst_n), .srst_n(dac_rst_n)
     );
 
-    assign pair_ready = adc_rst_n && decimator_s_ready;
+    assign pair_ready = adc_rst_n && adc_pair_ready;
     assign m00_axis_tready = pair_ready && m01_axis_tvalid;
     assign m01_axis_tready = pair_ready && m00_axis_tvalid;
 
-    rfdc_8lane_decimator12 decimator_inst (
-        .clk(clk_adc0),
-        .rst_n(adc_rst_n),
-        .s_valid(pair_valid),
-        .s_ready(decimator_s_ready),
-        .s_i_tdata(m00_axis_tdata),
-        .s_q_tdata(m01_axis_tdata),
-        .m_valid(decim_valid),
-        .m_ready(decim_ready),
-        .m_data(decim_data)
-    );
+    // RFDC already decimates by 24: one I/Q pair per 200 MHz beat.
+    assign adc_pair_ready = adc_fifo_ready;
+    assign adc_pair_valid = adc_rst_n && pair_valid;
+    assign adc_pair_data = {m01_axis_tdata, m00_axis_tdata};
 
     complex_sample_async_fifo sample_fifo_inst (
         .rst(!adc_rst_n),
         .wr_clk(clk_adc0),
-        .wr_valid(decim_valid),
-        .wr_ready(decim_ready),
-        .wr_data(decim_data),
+        .wr_valid(adc_pair_valid),
+        .wr_ready(adc_fifo_ready),
+        .wr_data(adc_pair_data),
         .rd_clk(clk_200m),
         .rd_valid(fifo_rd_valid),
         .rd_ready(fifo_rd_ready),
@@ -144,43 +133,21 @@ module adda_first_path_chain (
         .fifo_underflow_error(fir_fifo_underflow)
     );
 
-    complex_interp12_top interpolation_inst (
-        .clk(clk_200m),
-        .rst_n(alg_rst_n),
-        .s_valid(cal_valid),
-        .s_ready(cal_ready),
-        .s_data(cal_data),
-        .m_valid(interp_valid),
-        .m_ready(interp_ready),
-        .m_data(interp_data)
+    // RFDC performs interpolation. Cross one complex sample per beat.
+    complex_sample_async_fifo dac_fifo_inst (
+        .rst(!alg_rst_n), .wr_clk(clk_200m),
+        .wr_valid(cal_valid), .wr_ready(cal_ready), .wr_data(cal_data),
+        .rd_clk(clk_dac0), .rd_valid(dac_fifo_valid),
+        .rd_ready(dac_started && s00_axis_tready), .rd_data(dac_fifo_data),
+        .rd_level(dac_fifo_level),
+        .overflow(block_fifo_overflow), .underflow(block_fifo_underflow)
     );
-
-    complex_block_async_fifo block_fifo_inst (
-        .rst(!alg_rst_n),
-        .wr_clk(clk_200m),
-        .wr_valid(interp_valid),
-        .wr_ready(interp_ready),
-        .wr_data(interp_data),
-        .rd_clk(clk_dac0),
-        .rd_valid(block_fifo_valid),
-        .rd_ready(block_fifo_ready),
-        .rd_data(block_fifo_data),
-        .overflow(block_fifo_overflow),
-        .underflow(block_fifo_underflow)
-    );
-
-    gearbox_12to8 gearbox_inst (
-        .clk(clk_dac0),
-        .rst(!dac_rst_n),
-        .s_valid(block_fifo_valid),
-        .s_ready(block_fifo_ready),
-        .s_data(block_fifo_data),
-        .m_valid(s00_axis_tvalid),
-        .m_ready(s00_axis_tready),
-        .m_data(gearbox_data)
-    );
-
-    assign s00_axis_tdata = gearbox_data;
+    always @(posedge clk_dac0) begin
+        if (!dac_rst_n) dac_started <= 1'b0;
+        else if (dac_fifo_level >= 6'd4) dac_started <= 1'b1;
+    end
+    assign s00_axis_tvalid = dac_rst_n && dac_started && dac_fifo_valid;
+    assign s00_axis_tdata = dac_fifo_data;
     assign fifo_overflow = sample_fifo_overflow | fir_fifo_overflow |
                            block_fifo_overflow;
     assign fifo_underflow = sample_fifo_underflow | fir_fifo_underflow |

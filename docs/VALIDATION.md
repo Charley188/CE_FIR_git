@@ -1,5 +1,7 @@
 # 在线加载与调频验证（2026-09-24）
 
+当前RFDC24/200 MSPS改版验证见 [RFDC24.md](RFDC24.md)。以下早期记录包含已移除的PL变采样链路，不代表当前RFDC硬核和板上测量结果。
+
 当前FIR VNA补偿算法已改为FFT一致的方法，算法专项测试见 [VNA_ALGORITHM_VALIDATION.md](VNA_ALGORITHM_VALIDATION.md)。下列在线加载/RTL记录属于此前硬件验证。
 
 环境：Vivado/XSim 2023.2、MATLAB R2025b、Vitis ARM GCC。

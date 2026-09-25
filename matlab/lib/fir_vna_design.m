@@ -7,7 +7,7 @@ validateattributes(Fs,{'numeric'},{'scalar','real','finite','positive'});
 validateattributes(cfg.passband_hz,{'numeric'},{'scalar','real','finite','positive'});
 validateattributes(cfg.stopband_hz,{'numeric'},{'scalar','real','finite','positive'});
 assert(cfg.passband_hz<cfg.stopband_hz && cfg.stopband_hz<Fs/2,'Require passband < stopband < Fs/2');
-validateattributes(cfg.target_delay_samples,{'numeric'},{'scalar','integer','>=',0,'<',N});
+validateattributes(cfg.target_delay_samples,{'numeric'},{'scalar','integer','>=',0});
 validateattributes(cfg.regularization,{'numeric'},{'scalar','real','finite','positive'});
 validateattributes(cfg.max_gain_db,{'numeric'},{'scalar','real','finite'});
 f=f(:);g=g(:);

@@ -57,7 +57,6 @@ wire            glb_rstn;
 wire            clk_10M;
 wire            clk_100M;
 wire            clk_200M;   //rf_aix_stream ref_clk
-wire            clk_300M;   //rf_aix_stream ref_clk
 wire            clk_200m_locked;
 wire            first_path_fifo_overflow;
 wire            first_path_fifo_underflow;
@@ -70,24 +69,24 @@ reg             rf_user_sysref_dac_r;
 
 wire            rf_adc_axis_rstn;   //(* MARK_DEBUG="true" *)
 wire            rf_dac_axis_rstn; //(* MARK_DEBUG="true" *)
-wire [127:0]    rf_m00_axis_tdata;
+wire [16:0]     rf_m00_axis_tdata;
 wire            rf_m00_axis_tready;//(* MARK_DEBUG="true" *)
 wire            rf_m00_axis_tvalid;//(* MARK_DEBUG="true" *)
-wire [127:0]    rf_m01_axis_tdata;
+wire [16:0]     rf_m01_axis_tdata;
 wire            rf_m01_axis_tready;//(* MARK_DEBUG="true" *)
 wire            rf_m01_axis_tvalid;//(* MARK_DEBUG="true" *)
-wire [127:0]    rf_m02_axis_tdata;
+wire [16:0]     rf_m02_axis_tdata;
 wire            rf_m02_axis_tready;//(* MARK_DEBUG="true" *)
 wire            rf_m02_axis_tvalid;//(* MARK_DEBUG="true" *)
-wire [127:0]    rf_m03_axis_tdata;
+wire [16:0]     rf_m03_axis_tdata;
 wire            rf_m03_axis_tready;//(* MARK_DEBUG="true" *)
 wire            rf_m03_axis_tvalid;//(* MARK_DEBUG="true" *)
 
 
-wire [255:0]    rf_s00_axis_tdata;
+wire [31:0]     rf_s00_axis_tdata;
 wire            rf_s00_axis_tready;
 wire            rf_s00_axis_tvalid;
-wire [255:0]    rf_s02_axis_tdata;
+wire [31:0]     rf_s02_axis_tdata;
 wire            rf_s02_axis_tready;
 wire            rf_s02_axis_tvalid;
 
@@ -278,40 +277,40 @@ ila_adc ila_adc1_inst
 
 always @(posedge clk_adc0) begin
     adc0_data0_i <= rf_m00_axis_tdata[15:0];
-    adc0_data1_i <= rf_m00_axis_tdata[31:16];
-    adc0_data2_i <= rf_m00_axis_tdata[47:32];
-    adc0_data3_i <= rf_m00_axis_tdata[63:48];
-    adc0_data4_i <= rf_m00_axis_tdata[79:64];
-    adc0_data5_i <= rf_m00_axis_tdata[95:80];
-    adc0_data6_i <= rf_m00_axis_tdata[111:96];
-    adc0_data7_i <= rf_m00_axis_tdata[127:112];
+    adc0_data1_i <= 16'd0;
+    adc0_data2_i <= 16'd0;
+    adc0_data3_i <= 16'd0;
+    adc0_data4_i <= 16'd0;
+    adc0_data5_i <= 16'd0;
+    adc0_data6_i <= 16'd0;
+    adc0_data7_i <= 16'd0;
     adc0_data0_q <= rf_m01_axis_tdata[15:0];
-    adc0_data1_q <= rf_m01_axis_tdata[31:16];
-    adc0_data2_q <= rf_m01_axis_tdata[47:32];
-    adc0_data3_q <= rf_m01_axis_tdata[63:48];
-    adc0_data4_q <= rf_m01_axis_tdata[79:64];
-    adc0_data5_q <= rf_m01_axis_tdata[95:80];
-    adc0_data6_q <= rf_m01_axis_tdata[111:96];
-    adc0_data7_q <= rf_m01_axis_tdata[127:112];
+    adc0_data1_q <= 16'd0;
+    adc0_data2_q <= 16'd0;
+    adc0_data3_q <= 16'd0;
+    adc0_data4_q <= 16'd0;
+    adc0_data5_q <= 16'd0;
+    adc0_data6_q <= 16'd0;
+    adc0_data7_q <= 16'd0;
 end
 
 always @(posedge clk_adc0) begin
     adc1_data0_i <= rf_m02_axis_tdata[15:0];
-    adc1_data1_i <= rf_m02_axis_tdata[31:16];
-    adc1_data2_i <= rf_m02_axis_tdata[47:32];
-    adc1_data3_i <= rf_m02_axis_tdata[63:48];
-    adc1_data4_i <= rf_m02_axis_tdata[79:64];
-    adc1_data5_i <= rf_m02_axis_tdata[95:80];
-    adc1_data6_i <= rf_m02_axis_tdata[111:96];
-    adc1_data7_i <= rf_m02_axis_tdata[127:112];
+    adc1_data1_i <= 16'd0;
+    adc1_data2_i <= 16'd0;
+    adc1_data3_i <= 16'd0;
+    adc1_data4_i <= 16'd0;
+    adc1_data5_i <= 16'd0;
+    adc1_data6_i <= 16'd0;
+    adc1_data7_i <= 16'd0;
     adc1_data0_q <= rf_m03_axis_tdata[15:0];
-    adc1_data1_q <= rf_m03_axis_tdata[31:16];
-    adc1_data2_q <= rf_m03_axis_tdata[47:32];
-    adc1_data3_q <= rf_m03_axis_tdata[63:48];
-    adc1_data4_q <= rf_m03_axis_tdata[79:64];
-    adc1_data5_q <= rf_m03_axis_tdata[95:80];
-    adc1_data6_q <= rf_m03_axis_tdata[111:96];
-    adc1_data7_q <= rf_m03_axis_tdata[127:112];
+    adc1_data1_q <= 16'd0;
+    adc1_data2_q <= 16'd0;
+    adc1_data3_q <= 16'd0;
+    adc1_data4_q <= 16'd0;
+    adc1_data5_q <= 16'd0;
+    adc1_data6_q <= 16'd0;
+    adc1_data7_q <= 16'd0;
 end
 
 
@@ -381,43 +380,18 @@ adda_first_path_chain first_path_chain_inst (
     .fifo_underflow(first_path_fifo_underflow)
 );
 
-ad_data_cdc ad_data_cdc_inst1
-(
-    .clk_adc        (clk_adc0),
-    .clk_300M       (clk_300M),
-
-    .rst            (rst),
-
-    //axi_stream
-    .m0_axis_tdata  (rf_m02_axis_tdata),
-    .m0_axis_tready (rf_m02_axis_tready),
-    .m0_axis_tvalid (rf_m02_axis_tvalid),
-    .m1_axis_tdata  (rf_m03_axis_tdata),
-    .m1_axis_tready (rf_m03_axis_tready),
-    .m1_axis_tvalid (rf_m03_axis_tvalid),
-
-    .adc_cdc_dout   (adc1_cdc_dout)     //256bit
+wire second_path_overflow, second_path_underflow;
+ad_data_cdc ad_data_cdc_inst1 (
+    .clk_adc(clk_adc0), .clk_dac(clk_dac0),
+    .arst_n(pl_rstn && rf_adc_axis_rstn && rf_dac_axis_rstn),
+    .m0_axis_tdata(rf_m02_axis_tdata), .m0_axis_tvalid(rf_m02_axis_tvalid),
+    .m0_axis_tready(rf_m02_axis_tready),
+    .m1_axis_tdata(rf_m03_axis_tdata), .m1_axis_tvalid(rf_m03_axis_tvalid),
+    .m1_axis_tready(rf_m03_axis_tready),
+    .s_axis_tdata(rf_s02_axis_tdata), .s_axis_tvalid(rf_s02_axis_tvalid),
+    .s_axis_tready(rf_s02_axis_tready),
+    .overflow(second_path_overflow), .underflow(second_path_underflow)
 );
-
-
-//dac_cdc
-da_data_cdc da_data_cdc_inst1
-(
-    .clk_dac                (clk_dac0),
-    .clk_300M               (clk_300M),
-
-    .rst                    (rst),
-
-    .adc_cdc_tvalid         (1'b1),
-    .adc_cdc_tdata          (adc1_cdc_dout),
-
-    .s_axis_tdata           (rf_s02_axis_tdata),
-    .s_axis_tready          (rf_s02_axis_tready),
-    .s_axis_tvalid          (rf_s02_axis_tvalid)
-);
-
-
-
 
 design_1_wrapper design_1_wrapper_inst
 (
@@ -427,7 +401,6 @@ design_1_wrapper design_1_wrapper_inst
     .clk_100M               (clk_100M),
     .clk_200M               (clk_200M),
     .clk_200m_locked        (clk_200m_locked),
-    .clk_300M               (clk_300M),
 
     .emio_gpio_i            (emio_gpio_i),
     .emio_gpio_o            (emio_gpio_o),

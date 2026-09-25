@@ -4,13 +4,13 @@
 module tb_main;
   localparam integer MAX_SAMPLES=1048576;
   reg adc_clk=0, alg_clk=0, dac_clk=0, rst_n=0;
-  always #1.666666667 adc_clk=~adc_clk;
+  always #2.5 adc_clk=~adc_clk;
   always #2.5 alg_clk=~alg_clk;
-  initial begin #0.73; forever #1.666666667 dac_clk=~dac_clk; end
-  reg [127:0] adc_i=0,adc_q=0;
+  initial begin #0.73; forever #2.5 dac_clk=~dac_clk; end
+  reg [15:0] adc_i=0,adc_q=0;
   reg adc_valid=0;
   wire i_ready,q_ready;
-  wire [255:0] dac_data;
+  wire [31:0] dac_data;
   wire dac_valid,overflow,underflow;
   reg dac_ready=0;
   `include "online_coeff_tb.vh"
@@ -23,6 +23,21 @@ module tb_main;
     .m01_axis_tdata(adc_q),.m01_axis_tvalid(adc_valid),.m01_axis_tready(q_ready),
     .s00_axis_tdata(dac_data),.s00_axis_tvalid(dac_valid),.s00_axis_tready(dac_ready),
     .fifo_overflow(overflow),.fifo_underflow(underflow));
+  // Exercise the second channel independently, including DAC backpressure.
+  reg [15:0] bypass_i=0,bypass_q=0;
+  reg bypass_valid=0;
+  wire bypass_ir,bypass_qr,bypass_ov,bypass_uv,bypass_out_valid;
+  wire [31:0] bypass_out;
+  integer bypass_sent=0,bypass_received=0;
+  reg bypass_done=0,bypass_prev_valid=0,bypass_prev_ready=0;
+  reg [31:0] bypass_prev_data=0;
+  ad_data_cdc bypass_dut (
+    .clk_adc(adc_clk),.clk_dac(dac_clk),.arst_n(rst_n),
+    .m0_axis_tdata(bypass_i),.m1_axis_tdata(bypass_q),
+    .m0_axis_tvalid(bypass_valid),.m1_axis_tvalid(bypass_valid),
+    .m0_axis_tready(bypass_ir),.m1_axis_tready(bypass_qr),
+    .s_axis_tdata(bypass_out),.s_axis_tvalid(bypass_out_valid),
+    .s_axis_tready(dac_ready),.overflow(bypass_ov),.underflow(bypass_uv));
   integer xi[0:MAX_SAMPLES-1],xq[0:MAX_SAMPLES-1];
   integer ns,fi,fq,fc,fd,ff,fo,fb,fs,rc,extra,j,b,l;
   integer sent=0,nd=0,nf=0,no=0,nb=0,cycles=0;
@@ -30,7 +45,7 @@ module tb_main;
   integer max_join_count=0;
   reg loaded=0,input_done=0;
   reg prev_dac_valid=0,prev_dac_ready=0;
-  reg [255:0] prev_dac_data=0;
+  reg [31:0] prev_dac_data=0;
   reg [31:0] rng=32'h12345678;
   string in_dir,out_dir;
   initial begin
@@ -42,9 +57,9 @@ module tb_main;
     fc=$fopen({in_dir,"/config.txt"},"r");
     if (!fc) $fatal(1,"Run MATLAB MAIN mode 1 first");
     rc=$fscanf(fc,"%d",ns);$fclose(fc);
-    if (rc!=1 || ns<192 || ns>MAX_SAMPLES || ns%24!=0) $fatal(1,"Invalid sample count");
-    fi=$fopen({in_dir,"/input_2400_i.txt"},"r");
-    fq=$fopen({in_dir,"/input_2400_q.txt"},"r");
+    if (rc!=1 || ns<192 || ns>MAX_SAMPLES) $fatal(1,"Invalid sample count");
+    fi=$fopen({in_dir,"/input_200_i.txt"},"r");
+    fq=$fopen({in_dir,"/input_200_q.txt"},"r");
     if (!fi || !fq) $fatal(1,"Missing I/Q stimulus");
     for(j=0;j<ns;j=j+1) begin
       rc=$fscanf(fi,"%d",xi[j]);if(rc!=1) $fatal(1,"Invalid I row %0d",j);
@@ -53,7 +68,7 @@ module tb_main;
     end
     if($fscanf(fi,"%d",extra)==1 || $fscanf(fq,"%d",extra)==1) $fatal(1,"Surplus input samples");
     $fclose(fi);$fclose(fq);
-    fd=$fopen({out_dir,"/decimator.txt"},"w");ff=$fopen({out_dir,"/fir.txt"},"w");
+    fd=$fopen({out_dir,"/adc.txt"},"w");ff=$fopen({out_dir,"/fir.txt"},"w");
     fo=$fopen({out_dir,"/dac.txt"},"w");fb=$fopen({out_dir,"/dac_beats.txt"},"w");
     if(!fd || !ff || !fo || !fb) $fatal(1,"Cannot open result files");
     loaded=1;
@@ -63,19 +78,44 @@ module tb_main;
     repeat(64) @(negedge adc_clk);
     repeat(64) @(negedge axi_clk); // XPM command/reply FIFO reset release
     load_coefficients();
-    for(b=0;b<ns/8;b=b+1) begin
-      for(l=0;l<8;l=l+1) begin adc_i[l*16+:16]=xi[b*8+l];adc_q[l*16+:16]=xq[b*8+l];end
+    for(b=0;b<ns;b=b+1) begin
+      adc_i=xi[b];adc_q=xq[b];
       adc_valid=1;
       @(posedge adc_clk);
+      if ($test$plusargs("CONTINUOUS") && sent>32 && !(i_ready && q_ready)) $fatal(1,"Input throughput below one sample/cycle");
       while(!(i_ready && q_ready)) @(posedge adc_clk);
-      sent=sent+8;
+      sent=sent+1;
       @(negedge adc_clk);
     end
     adc_valid=0;input_done=1;
   end
+  initial begin
+    wait(loaded && rst_n);
+    repeat(64) @(negedge adc_clk);
+    for(integer k=0;k<ns;k=k+1) begin
+      bypass_i=xi[k];bypass_q=xq[k];bypass_valid=1;
+      @(posedge adc_clk);
+      if ($test$plusargs("CONTINUOUS") && k>32 && !(bypass_ir && bypass_qr)) $fatal(1,"Bypass throughput below one sample/cycle");
+      while(!(bypass_ir && bypass_qr)) @(posedge adc_clk);
+      bypass_sent=bypass_sent+1;
+      @(negedge adc_clk);
+    end
+    bypass_valid=0;bypass_done=1;
+  end
+  always @(posedge dac_clk) if(rst_n) begin
+    if($test$plusargs("CONTINUOUS") && bypass_received>0 && bypass_received<ns && !bypass_out_valid) $fatal(1,"Bypass stream gap");
+    if(bypass_ov || bypass_uv) $fatal(1,"Bypass FIFO fault");
+    if(bypass_prev_valid && !bypass_prev_ready && (!bypass_out_valid || bypass_out!==bypass_prev_data)) $fatal(1,"Bypass changed under stall");
+    if(bypass_out_valid && dac_ready) begin
+      if(bypass_received>=ns) $fatal(1,"Extra bypass output");
+      if($signed(bypass_out[15:0])!==xi[bypass_received] || $signed(bypass_out[31:16])!==xq[bypass_received]) $fatal(1,"Bypass sample/order mismatch %0d",bypass_received);
+      bypass_received=bypass_received+1;
+    end
+    bypass_prev_valid<=bypass_out_valid;bypass_prev_ready<=dac_ready;bypass_prev_data<=bypass_out;
+  end
   always @(negedge dac_clk) begin
     rng<={rng[30:0],rng[31]^rng[21]^rng[1]^rng[0]};
-    dac_ready<=rst_n && (rng[2:0]!=0);
+    dac_ready<=rst_n && ($test$plusargs("CONTINUOUS") || (rng[2:0]!=0));
   end
   always @(posedge adc_clk) if(rst_n) begin
     cycles=cycles+1;
@@ -83,9 +123,9 @@ module tb_main;
     if($isunknown({i_ready,q_ready,overflow,underflow})) $fatal(1,"Unknown control");
     if(overflow || underflow) $fatal(1,"FIFO fault");
     if(adc_valid && (i_ready!==q_ready)) $fatal(1,"I/Q handshake split");
-    if(dut.decim_valid && dut.decim_ready) begin
-      if($isunknown(dut.decim_data) || nd>=ns/12) $fatal(1,"Invalid decimator output");
-      $fdisplay(fd,"%0d %0d %0d",nd,$signed(dut.decim_data[15:0]),$signed(dut.decim_data[31:16]));nd=nd+1;
+    if(dut.adc_pair_valid && dut.adc_fifo_ready) begin
+      if($isunknown(dut.adc_pair_data) || nd>=ns) $fatal(1,"Invalid ADC output");
+      $fdisplay(fd,"%0d %0d %0d",nd,$signed(dut.adc_pair_data[15:0]),$signed(dut.adc_pair_data[31:16]));nd=nd+1;
     end
   end
   always @(posedge alg_clk) if(rst_n) begin
@@ -95,17 +135,18 @@ module tb_main;
     if(dut.fir_inst.core_inst.count_q_cr>max_join_count) max_join_count=dut.fir_inst.core_inst.count_q_cr;
     if(overflow || underflow) $fatal(1,"FIFO fault");
     if(dut.cal_valid && dut.cal_ready) begin
-      if($isunknown(dut.cal_data) || nf>=ns/12) $fatal(1,"Invalid FIR output");
+      if($isunknown(dut.cal_data) || nf>=ns) $fatal(1,"Invalid FIR output");
       $fdisplay(ff,"%0d %0d %0d",nf,$signed(dut.cal_data[15:0]),$signed(dut.cal_data[31:16]));nf=nf+1;
     end
   end
   always @(posedge dac_clk) if(rst_n) begin
+    if($test$plusargs("CONTINUOUS") && no>0 && no<ns && !dac_valid) $fatal(1,"DAC stream gap");
     if($isunknown(dac_valid)) $fatal(1,"Unknown DAC valid");
     if(prev_dac_valid && !prev_dac_ready && (!dac_valid || dac_data!==prev_dac_data)) $fatal(1,"DAC changed under backpressure");
     if(dac_valid && dac_ready) begin
       if($isunknown(dac_data) || no>=ns) $fatal(1,"Invalid DAC output");
       $fwrite(fb,"%0d",nb);
-      for(integer lane=0;lane<8;lane=lane+1) begin
+      for(integer lane=0;lane<1;lane=lane+1) begin
         ai=$signed(dac_data[lane*32+:16]);aq=$signed(dac_data[lane*32+16+:16]);
         $fdisplay(fo,"%0d %0d %0d",no,ai,aq);$fwrite(fb," %0d %0d",ai,aq);no=no+1;
       end
@@ -114,11 +155,12 @@ module tb_main;
     prev_dac_valid<=dac_valid;prev_dac_ready<=dac_ready;prev_dac_data<=dac_data;
   end
   initial begin
-    wait(loaded);wait(no==ns);
+    wait(loaded);wait(no==ns && bypass_received==ns);
     repeat(64) @(negedge dac_clk);
-    if(!input_done || sent!=ns || nd!=ns/12 || nf!=ns/12 || nb!=ns/8 || dac_valid) $fatal(1,"Count/drain mismatch");
+    if(!bypass_done || bypass_sent!=ns || bypass_out_valid) $fatal(1,"Bypass drain mismatch");
+    if(!input_done || sent!=ns || nd!=ns || nf!=ns || nb!=ns || dac_valid) $fatal(1,"Count/drain mismatch");
     $fclose(fd);$fclose(ff);$fclose(fo);$fclose(fb);
-    fs=$fopen({out_dir,"/tb_status.txt"},"w");$fdisplay(fs,"PASS samples=%0d decimated=%0d fir=%0d beats=%0d max_join=%0d",no,nd,nf,nb,max_join_count);$fclose(fs);
+    fs=$fopen({out_dir,"/tb_status.txt"},"w");$fdisplay(fs,"PASS samples=%0d adc=%0d fir=%0d beats=%0d max_join=%0d",no,nd,nf,nb,max_join_count);$fclose(fs);
     $display("TB_MAIN_PASS samples=%0d; run MATLAB mode 2 for numerical comparison",no);$finish;
   end
 endmodule

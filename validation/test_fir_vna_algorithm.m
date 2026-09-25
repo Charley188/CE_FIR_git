@@ -48,8 +48,9 @@ im=read_hex(fullfile(export_root,'matlab','vna','output','bypass','h_im.mem'));
 assert(isequal(re,[65536;zeros(299,1)]) && all(im==0));
 u=fir_vna(export_root,2,cfg);
 base=fullfile(export_root,'matlab','vna','output','compensated');
-assert(isequal(read_hex(fullfile(base,'h_re.mem')),mod(u.q(:,1),2^18)));
-assert(isequal(read_hex(fullfile(base,'h_im.mem')),mod(u.q(:,2),2^18)));
+assert(isequal(read_hex(fullfile(base,'h_re.mem')),mod(u.q_hw(:,1),2^18)));
+assert(isequal(read_hex(fullfile(base,'h_im.mem')),mod(u.q_hw(:,2),2^18)));
+assert(isequal(u.q_hw,[u.q(:,1),-u.q(:,2)]) && u.hardware_conjugated);
 rows=readmatrix(fullfile(base,'response.csv'));assert(size(rows,2)==7 && size(rows,1)==nnz(abs(f)<=cfg.passband_hz));
 cfg.measurement_file=fullfile(scratch,'bypass.csv');writematrix([freq_axis,real(g),imag(g)],cfg.measurement_file);
 v=fir_vna(export_root,2,cfg);assert(isequal(u.q,v.q));
@@ -57,6 +58,11 @@ v=fir_vna(export_root,2,cfg);assert(isequal(u.q,v.q));
 long=fir_vna_design(f,0.5*exp(-2j*pi*f/Fs*400),cfg);
 assert(abs(long.predicted_level_offset_db)>1 || long.predicted_ripple_db>1 || long.predicted_phase_error_deg>5);
 fprintf('PASS infeasible-delay diagnostics: ripple %.6g dB; level %.6g dB; phase %.6g deg\n',long.predicted_ripple_db,long.predicted_level_offset_db,long.predicted_phase_error_deg);
+% Measured bulk delay may exceed FIR length; total target delay can exceed 300.
+delayed=cfg;delayed.target_delay_samples=596;
+bulk=fir_vna_design(f,0.5*exp(-2j*pi*f/Fs*447),delayed);
+assert(bulk.predicted_ripple_db<0.1 && abs(bulk.predicted_level_offset_db)<0.1);
+fprintf('PASS measured bulk delay: total target %d, ripple %.6g dB\n',delayed.target_delay_samples,bulk.predicted_ripple_db);
 fprintf('PASS VNA ALGORITHM: FFT equivalence, 300tap quantization, retries, input validation, exports and delay diagnostics\n');
 end
 function values=read_hex(path)

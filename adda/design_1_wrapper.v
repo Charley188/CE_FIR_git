@@ -2,7 +2,7 @@
 //Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2023.2 (win64) Build 4029153 Fri Oct 13 20:14:34 MDT 2023
-//Date        : Thu Sep 24 15:16:31 2026
+//Date        : Thu Sep 24 19:20:21 2026
 //Host        : Charlieco running 64-bit major release  (build 9200)
 //Command     : generate_target design_1_wrapper.bd
 //Design      : design_1_wrapper
@@ -15,7 +15,6 @@ module design_1_wrapper
     clk_10M,
     clk_200M,
     clk_200m_locked,
-    clk_300M,
     clk_adc0,
     clk_dac0,
     emio_gpio_i,
@@ -86,7 +85,6 @@ module design_1_wrapper
   output clk_10M;
   output clk_200M;
   output clk_200m_locked;
-  output clk_300M;
   output clk_adc0;
   output clk_dac0;
   input [3:0]emio_gpio_i;
@@ -118,22 +116,22 @@ module design_1_wrapper
   input rf_dac0_clk_n;
   input rf_dac0_clk_p;
   output [0:0]rf_dac_axis_rstn;
-  output [127:0]rf_m00_axis_tdata;
+  output [15:0]rf_m00_axis_tdata;
   input rf_m00_axis_tready;
   output rf_m00_axis_tvalid;
-  output [127:0]rf_m01_axis_tdata;
+  output [15:0]rf_m01_axis_tdata;
   input rf_m01_axis_tready;
   output rf_m01_axis_tvalid;
-  output [127:0]rf_m02_axis_tdata;
+  output [15:0]rf_m02_axis_tdata;
   input rf_m02_axis_tready;
   output rf_m02_axis_tvalid;
-  output [127:0]rf_m03_axis_tdata;
+  output [15:0]rf_m03_axis_tdata;
   input rf_m03_axis_tready;
   output rf_m03_axis_tvalid;
-  input [255:0]rf_s00_axis_tdata;
+  input [31:0]rf_s00_axis_tdata;
   output rf_s00_axis_tready;
   input rf_s00_axis_tvalid;
-  input [255:0]rf_s02_axis_tdata;
+  input [31:0]rf_s02_axis_tdata;
   output rf_s02_axis_tready;
   input rf_s02_axis_tvalid;
   input rf_sysref_in_diff_n;
@@ -158,7 +156,6 @@ module design_1_wrapper
   wire clk_10M;
   wire clk_200M;
   wire clk_200m_locked;
-  wire clk_300M;
   wire clk_adc0;
   wire clk_dac0;
   wire [3:0]emio_gpio_i;
@@ -190,22 +187,22 @@ module design_1_wrapper
   wire rf_dac0_clk_n;
   wire rf_dac0_clk_p;
   wire [0:0]rf_dac_axis_rstn;
-  wire [127:0]rf_m00_axis_tdata;
+  wire [15:0]rf_m00_axis_tdata;
   wire rf_m00_axis_tready;
   wire rf_m00_axis_tvalid;
-  wire [127:0]rf_m01_axis_tdata;
+  wire [15:0]rf_m01_axis_tdata;
   wire rf_m01_axis_tready;
   wire rf_m01_axis_tvalid;
-  wire [127:0]rf_m02_axis_tdata;
+  wire [15:0]rf_m02_axis_tdata;
   wire rf_m02_axis_tready;
   wire rf_m02_axis_tvalid;
-  wire [127:0]rf_m03_axis_tdata;
+  wire [15:0]rf_m03_axis_tdata;
   wire rf_m03_axis_tready;
   wire rf_m03_axis_tvalid;
-  wire [255:0]rf_s00_axis_tdata;
+  wire [31:0]rf_s00_axis_tdata;
   wire rf_s00_axis_tready;
   wire rf_s00_axis_tvalid;
-  wire [255:0]rf_s02_axis_tdata;
+  wire [31:0]rf_s02_axis_tdata;
   wire rf_s02_axis_tready;
   wire rf_s02_axis_tvalid;
   wire rf_sysref_in_diff_n;
@@ -231,7 +228,6 @@ module design_1_wrapper
         .clk_10M(clk_10M),
         .clk_200M(clk_200M),
         .clk_200m_locked(clk_200m_locked),
-        .clk_300M(clk_300M),
         .clk_adc0(clk_adc0),
         .clk_dac0(clk_dac0),
         .emio_gpio_i(emio_gpio_i),

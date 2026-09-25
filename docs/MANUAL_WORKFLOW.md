@@ -3,8 +3,8 @@
 日常只需 MATLAB、Vivado、Vitis Classic 的图形界面。
 
 1. 打开 `matlab/MAIN.m`，设置 MODE=1 并 Run。standard 生成标准低通；current 读取 `coeff/` 的现有 COE；vna_bypass / vna_compensated 选择 VNA 输出。生成 ADC 输入和自然顺序的300tap `data/input/h_re.mem`、`h_im.mem`。
-2. 打开 `tb/ce_fir_tb.xpr`，Run Behavioral Simulation。主 TB 通过 AXI 加载上述 MEM，再运行真实抽取/FIR/插值数据链。等待 `PASS MAIN`。
-3. MATLAB MODE=2 并 Run，比较 `data/output/` 的抽取、FIR和DAC结果。
+2. 打开 `tb/ce_fir_tb.xpr`，Run Behavioral Simulation。主 TB 通过 AXI 加载上述 MEM，再运行真实200 MSPS FIR/跨时钟数据链，并逐点检查第二路直通。等待 `TB_MAIN_PASS`。
+3. MATLAB MODE=2 并 Run，比较 `data/output/` 的ADC输入、FIR和DAC结果。
 4. 要上板时，你手动复制选定的两份 MEM 到 `ps/src/coeff`，Vitis Clean → Build → Run。首次新硬件准备及详细步骤见 [ONLINE.md](ONLINE.md)。MATLAB 不自动复制到PS。
 5. 要调频时，按 [NCO.md](NCO.md) 操作 VIO。
 

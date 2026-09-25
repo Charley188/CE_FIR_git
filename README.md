@@ -1,5 +1,7 @@
 # FIR 300tap 开发工程
 
+当前数据通路：RFDC 24倍抽取/插值，PL单复数样本200 MSPS；配置与验证见 [RFDC24说明](docs/RFDC24.md)。
+
 Git 分支：`fir/300tap`。与另一 tap 分支共用仓库历史，各自拥有独立工作目录、IP 和数据。
 
 | 打开入口 | 用途 |
@@ -18,7 +20,7 @@ Git 分支：`fir/300tap`。与另一 tap 分支共用仓库历史，各自拥�
 - [定点链路与验证边界](docs/MODEL.md)
 - [验证结果](docs/VALIDATION.md)
 
-`rtl/`、`ip/`、`coeff/` 在本版本的 ADDA/TB 间共用。校准 FIR 固定为可重载、非对称、300 tap，`rtl/fir_ip_layout.vh` 的实部/虚部 AXI 位宽均为 48；`interp12_ip_layout.vh` 管插值 IP。
+`rtl/`、`ip/`、`coeff/` 在本版本的 ADDA/TB 间共用。校准 FIR 固定为可重载、非对称、300 tap，`rtl/fir_ip_layout.vh` 的实部/虚部 AXI 位宽均为 48。原PL插值IP不再参与活动工程。
 `data/input/` 和 `data/output/` 是自动衔接目录，无需搬运数据，也不检查批次身份。
 
 首次重新生成 bitstream 并导出匹配 XSA，在 Vitis 中更新平台并导入 `ps/src/`。此后仅修改校准 FIR 系数或通过 VIO 调频不需要重做 bit；修改 tap 数、位宽、抽取/插值结构仍需重建硬件。第二路保持 RFDC 直通，不新增第二路校准 FIR。
