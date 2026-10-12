@@ -1,4 +1,5 @@
 # Run with Vivado 2023.2 after saving/closing the GUI project.
+error "Historical RFDC24 migration is incompatible with SSR RTL. Use enable_ssr600.tcl."
 set root [file normalize [file join [file dirname [info script]] ../..]]
 set obsolete {interp3_stage1.coe interp2_stage2_odd.coe interp2_stage3_odd.coe rfdc_8lane_decimator12.v complex_interp12_top.v interp3_ssr_wrapper.v halfband_interp2_ssr3_wrapper.v halfband_interp2_ssr6_wrapper.v gearbox_12to8.v complex_block_async_fifo.v da_data_cdc.v fifo_generator_0.xci interp12_ip_layout.vh interp3_stage1.xci interp2_stage2_odd.xci interp2_stage3_odd.xci}
 foreach project {adda/project/ce_fir_adda.xpr tb/ce_fir_tb.xpr} {

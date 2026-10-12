@@ -4,9 +4,9 @@ root=fileparts(fileparts(mfilename('fullpath')));
 addpath(fullfile(root,'matlab'),fullfile(root,'matlab/lib'));
 if ~isfolder(scratch),mkdir(scratch);end
 cfg=fir_config();cfg.show_figures=false;cfg.center_hz=1.2e9;
-cfg.passband_hz=80e6;cfg.stopband_hz=90e6;
+cfg.hardware_conjugate=true;
 cfg.target_delay_samples=149;cfg.regularization=1e-4;cfg.max_gain_db=6;
-f=linspace(-100e6,100e6,1001)';
+f=linspace(-cfg.sample_rate_hz/2,cfg.sample_rate_hz/2,1201)';
 freq_axis=f+cfg.center_hz;
 vna_data=0.4*(1+0.15*cos(2*pi*f/cfg.sample_rate_hz*2)).*exp(0.4j-2j*pi*f/cfg.sample_rate_hz*20);
 cfg.measurement_file=fullfile(scratch,'bypass_measurement.mat');

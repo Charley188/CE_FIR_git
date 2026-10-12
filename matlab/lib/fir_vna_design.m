@@ -7,6 +7,8 @@ validateattributes(Fs,{'numeric'},{'scalar','real','finite','positive'});
 validateattributes(cfg.passband_hz,{'numeric'},{'scalar','real','finite','positive'});
 validateattributes(cfg.stopband_hz,{'numeric'},{'scalar','real','finite','positive'});
 assert(cfg.passband_hz<cfg.stopband_hz && cfg.stopband_hz<Fs/2,'Require passband < stopband < Fs/2');
+% Total channel delay includes RFDC/FIFO/analog latency. Only the delay added
+% by the causal FIR must fit its tap span; total delay can exceed N-1.
 validateattributes(cfg.target_delay_samples,{'numeric'},{'scalar','integer','>=',0});
 validateattributes(cfg.regularization,{'numeric'},{'scalar','real','finite','positive'});
 validateattributes(cfg.max_gain_db,{'numeric'},{'scalar','real','finite'});

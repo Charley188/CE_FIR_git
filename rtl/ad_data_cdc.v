@@ -1,11 +1,11 @@
 `timescale 1ns/1ps
-// Second RFDC path: one 16-bit I and Q sample per 200 MHz beat.
+// Second RFDC path: two consecutive complex samples per 300 MHz beat.
 module ad_data_cdc (
     input wire clk_adc, clk_dac, arst_n,
-    input wire [15:0] m0_axis_tdata, m1_axis_tdata,
+    input wire [31:0] m0_axis_tdata, m1_axis_tdata,
     input wire m0_axis_tvalid, m1_axis_tvalid,
     output wire m0_axis_tready, m1_axis_tready,
-    output wire [31:0] s_axis_tdata,
+    output wire [63:0] s_axis_tdata,
     output wire s_axis_tvalid,
     input wire s_axis_tready,
     output wire overflow, underflow
@@ -20,7 +20,7 @@ module ad_data_cdc (
     complex_sample_async_fifo fifo_inst (
         .rst(!adc_rst_n), .wr_clk(clk_adc),
         .wr_valid(adc_rst_n && m0_axis_tvalid && m1_axis_tvalid),
-        .wr_ready(wr_ready), .wr_data({m1_axis_tdata,m0_axis_tdata}),
+        .wr_ready(wr_ready), .wr_data({m1_axis_tdata[31:16],m0_axis_tdata[31:16],m1_axis_tdata[15:0],m0_axis_tdata[15:0]}),
         .rd_clk(clk_dac), .rd_valid(rd_valid),
         .rd_ready(dac_rst_n && started && s_axis_tready), .rd_data(s_axis_tdata),
         .rd_level(rd_level), .overflow(overflow), .underflow(underflow)

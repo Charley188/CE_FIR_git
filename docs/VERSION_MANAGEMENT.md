@@ -1,18 +1,15 @@
-# FIR 单仓库、双开发目录
+# 分支与目录
 
-| 工作目录 | 开发分支 | 工程说明 |
-|---|---|---|
-| CE_45tap_git | fir/45tap | [45tap 入口](../../CE_45tap_git/README.md) |
-| CE_300tap_git | fir/300tap | [300tap 入口](../../CE_300tap_git/README.md) |
+同一仓库 https://github.com/Charley188/CE_FIR_git ：
 
-`.repo.git/` 保存唯一的 Git 对象库和分支历史。两个目录是 Git worktree，可以同时打开使用，不要再复制工程作为新版本。
+| 分支 | 配置 |
+|---|---|
+| fir/45tap | 历史45tap工程 |
+| fir/300tap | 200 MSPS、300tap工程 |
+| 600M | 600 MSPS、300tap、SSR=2、DAC同源算法时钟 |
 
-在 Git 图形客户端中分别打开这两个工作目录，各自查看修改、提交和历史。稳定版本用 tag 标记；日常在对应分支提交。不要在一个工作目录切换到另一个已经占用的分支。
-共用功能的修复在一个分支验证后，通过 cherry-pick 同步对应提交到另一分支，再重新验证。不要直接把另一版本整个 IP/系数目录覆盖过来。
+600M沿用200M的主目录：adda、coeff、data、docs、ip、matlab、ps、rtl、tb、validation。各分支独立克隆或checkout，避免混用IP输出、BIT/LTX/XSA、ELF及板卡系数。
 
-同一版本的 ADDA 与 TB 共用物理 RTL/IP/头文件；两个版本之间独立保存工作副本，只通过 Git 同步代码。
+仓库保存RTL、BD/XCI、工程入口、默认系数和常规操作文档。Vivado/Vitis缓存、综合实现结果、临时测试工程、日志、报告、波形、测量和生成的补偿系数由本机保留，通过.gitignore排除。
 
-纳入版本管理：RTL、XCI/BD、约束、COE、MATLAB/PS 源码、XPR、说明与验证摘要。
-不纳入：Vivado 缓存、bit/XSA、日常输入输出、VNA 实测文件及生成结果。重要实验数据和发布 bit/XSA 请另外归档。
-
-远端 origin：[Charley188/CE_FIR_git](https://github.com/Charley188/CE_FIR_git)。两个开发分支均跟踪对应远端分支，稳定标签也已推送。备份时应一起保留 `.repo.git` 和两个工作目录；不要单独删除或移动 `.repo.git`。
+主工程入口为adda/project/ce_fir_adda.xpr；重新生成输出后综合和实现。PS默认单位冲激MEM适合重新测量，具体板卡补偿由VNA_MAIN生成、手动复制，再Vitis Clean → Build → Run。

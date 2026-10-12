@@ -56,8 +56,9 @@ wire            sys_rstn;
 wire            glb_rstn;
 wire            clk_10M;
 wire            clk_100M;
-wire            clk_200M;   //rf_aix_stream ref_clk
-wire            clk_200m_locked;
+// BD connects both clk_300M and clk_dac0 to clk_wiz_dac/clk_out1.
+wire            clk_300M;
+wire            clk_300m_locked; // clk_wiz_dac/locked, matching the algorithm clock.
 wire            first_path_fifo_overflow;
 wire            first_path_fifo_underflow;
 
@@ -69,24 +70,24 @@ reg             rf_user_sysref_dac_r;
 
 wire            rf_adc_axis_rstn;   //(* MARK_DEBUG="true" *)
 wire            rf_dac_axis_rstn; //(* MARK_DEBUG="true" *)
-wire [16:0]     rf_m00_axis_tdata;
+wire [31:0]     rf_m00_axis_tdata;
 wire            rf_m00_axis_tready;//(* MARK_DEBUG="true" *)
 wire            rf_m00_axis_tvalid;//(* MARK_DEBUG="true" *)
-wire [16:0]     rf_m01_axis_tdata;
+wire [31:0]     rf_m01_axis_tdata;
 wire            rf_m01_axis_tready;//(* MARK_DEBUG="true" *)
 wire            rf_m01_axis_tvalid;//(* MARK_DEBUG="true" *)
-wire [16:0]     rf_m02_axis_tdata;
+wire [31:0]     rf_m02_axis_tdata;
 wire            rf_m02_axis_tready;//(* MARK_DEBUG="true" *)
 wire            rf_m02_axis_tvalid;//(* MARK_DEBUG="true" *)
-wire [16:0]     rf_m03_axis_tdata;
+wire [31:0]     rf_m03_axis_tdata;
 wire            rf_m03_axis_tready;//(* MARK_DEBUG="true" *)
 wire            rf_m03_axis_tvalid;//(* MARK_DEBUG="true" *)
 
 
-wire [31:0]     rf_s00_axis_tdata;
+wire [63:0]     rf_s00_axis_tdata;
 wire            rf_s00_axis_tready;
 wire            rf_s00_axis_tvalid;
-wire [31:0]     rf_s02_axis_tdata;
+wire [63:0]     rf_s02_axis_tdata;
 wire            rf_s02_axis_tready;
 wire            rf_s02_axis_tvalid;
 
@@ -277,7 +278,7 @@ ila_adc ila_adc1_inst
 
 always @(posedge clk_adc0) begin
     adc0_data0_i <= rf_m00_axis_tdata[15:0];
-    adc0_data1_i <= 16'd0;
+    adc0_data1_i <= rf_m00_axis_tdata[31:16];
     adc0_data2_i <= 16'd0;
     adc0_data3_i <= 16'd0;
     adc0_data4_i <= 16'd0;
@@ -285,7 +286,7 @@ always @(posedge clk_adc0) begin
     adc0_data6_i <= 16'd0;
     adc0_data7_i <= 16'd0;
     adc0_data0_q <= rf_m01_axis_tdata[15:0];
-    adc0_data1_q <= 16'd0;
+    adc0_data1_q <= rf_m01_axis_tdata[31:16];
     adc0_data2_q <= 16'd0;
     adc0_data3_q <= 16'd0;
     adc0_data4_q <= 16'd0;
@@ -296,7 +297,7 @@ end
 
 always @(posedge clk_adc0) begin
     adc1_data0_i <= rf_m02_axis_tdata[15:0];
-    adc1_data1_i <= 16'd0;
+    adc1_data1_i <= rf_m02_axis_tdata[31:16];
     adc1_data2_i <= 16'd0;
     adc1_data3_i <= 16'd0;
     adc1_data4_i <= 16'd0;
@@ -304,7 +305,7 @@ always @(posedge clk_adc0) begin
     adc1_data6_i <= 16'd0;
     adc1_data7_i <= 16'd0;
     adc1_data0_q <= rf_m03_axis_tdata[15:0];
-    adc1_data1_q <= 16'd0;
+    adc1_data1_q <= rf_m03_axis_tdata[31:16];
     adc1_data2_q <= 16'd0;
     adc1_data3_q <= 16'd0;
     adc1_data4_q <= 16'd0;
@@ -346,8 +347,18 @@ end
 wire update_hold,coeff_we,coeff_channel,coeff_match,load_quiet,path_running,reload_fault;
 wire [10:0] coeff_addr;
 wire [17:0] coeff_re,coeff_im;
+wire diagnostic_bypass;
+wire diagnostic_mode_request;
+vio_stream_mode stream_mode_inst(.clk(clk_300M),.probe_out0(diagnostic_mode_request),
+    .probe_in0({update_hold,path_running,diagnostic_bypass}));
+wire [127:0] diag_adc,diag_alg,diag_dac;
+ila_stream_diag diag_adc_inst(.clk(clk_adc0),.probe0(diag_adc));
+ila_stream_diag diag_alg_inst(.clk(clk_300M),.probe0(diag_alg));
+ila_stream_diag diag_dac_inst(.clk(clk_dac0),.probe0(diag_dac));
 ce_fir_coeff_control coeff_control_inst(
- .axi_clk(clk_100M),.alg_clk(clk_200M),.arst_n(pl_rstn),
+ .diagnostic_bypass(diagnostic_bypass),
+ .diagnostic_mode_request(diagnostic_mode_request),
+ .axi_clk(clk_100M),.alg_clk(clk_300M),.arst_n(pl_rstn),
  .s_awaddr(param_m_axi_awaddr),.s_awvalid(param_m_axi_awvalid),.s_awready(param_m_axi_awready),
  .s_wdata(param_m_axi_wdata),.s_wstrb(param_m_axi_wstrb),.s_wvalid(param_m_axi_wvalid),.s_wready(param_m_axi_wready),
  .s_bresp(param_m_axi_bresp),.s_bvalid(param_m_axi_bvalid),.s_bready(param_m_axi_bready),
@@ -360,12 +371,13 @@ ce_fir_coeff_control coeff_control_inst(
 
 //first path
 adda_first_path_chain first_path_chain_inst (
+    .diagnostic_bypass(diagnostic_bypass),.diag_adc(diag_adc),.diag_alg(diag_alg),.diag_dac(diag_dac),
     .update_hold(update_hold),.coeff_we(coeff_we),.coeff_addr(coeff_addr),.coeff_re(coeff_re),.coeff_im(coeff_im),
     .coeff_match(coeff_match),.load_quiet(load_quiet),.path_running(path_running),.reload_fault(reload_fault),
-    .clk_adc0(clk_adc0), .clk_200m(clk_200M), .clk_dac0(clk_dac0),
+    .clk_adc0(clk_adc0), .clk_alg(clk_300M), .clk_dac0(clk_dac0),
     .pl_rstn(pl_rstn),
     .rf_adc_axis_rstn(rf_adc_axis_rstn),
-    .clk_200m_locked(clk_200m_locked),
+    .alg_clk_locked(clk_300m_locked),
     .rf_dac_axis_rstn(rf_dac_axis_rstn),
     .m00_axis_tdata(rf_m00_axis_tdata),
     .m00_axis_tvalid(rf_m00_axis_tvalid),
@@ -399,8 +411,8 @@ design_1_wrapper design_1_wrapper_inst
     .clk_dac0               (clk_dac0),
     .clk_10M                (clk_10M),
     .clk_100M               (clk_100M),
-    .clk_200M               (clk_200M),
-    .clk_200m_locked        (clk_200m_locked),
+    .clk_300M               (clk_300M),
+    .clk_300m_locked        (clk_300m_locked),
 
     .emio_gpio_i            (emio_gpio_i),
     .emio_gpio_o            (emio_gpio_o),

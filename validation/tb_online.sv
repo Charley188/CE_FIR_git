@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module tb_online;
  reg clk=0,axi_clk=0,rst=0;
- always #2.5 clk=~clk;
+ always #(5.0/3.0) clk=~clk;
  always #5 axi_clk=~axi_clk;
  reg [39:0] awaddr=0,araddr=0;
  reg awvalid=0,wvalid=0,bready=1,arvalid=0,rready=1;
@@ -12,8 +12,8 @@ module tb_online;
  wire [10:0] addr;wire [17:0] cr,ci;
  wire [3:0] rv,rr,cv,cc,missing,unexpected;
  wire last;wire [23:0] re_data,im_data;
- reg in_valid=0;reg [31:0] in_data=0;
- wire in_ready,out_valid;wire [31:0] out_data;
+ reg in_valid=0;reg [63:0] in_data=0;
+ wire in_ready,out_valid;wire [63:0] out_data;
  ce_fir_coeff_control ctrl(.axi_clk(axi_clk),.alg_clk(clk),.arst_n(rst),
  .s_awaddr(awaddr),.s_awvalid(awvalid),.s_awready(awready),
  .s_wdata(wdata),.s_wstrb(4'hf),.s_wvalid(wvalid),.s_wready(wready),
@@ -90,16 +90,18 @@ module tb_online;
    end
    expected[k]={sat(b),sat(a)};
   end
-  for(k=0;k<700;k=k+1) begin
-   @(negedge clk);in_valid=1;in_data={16'(xq[k]),16'(xi[k])};
+  for(k=0;k<700;k=k+2) begin
+   @(negedge clk);in_valid=1;in_data={16'(xq[k+1]),16'(xi[k+1]),16'(xq[k]),16'(xi[k])};
    @(posedge clk);while(!in_ready) @(posedge clk);
   end
   @(negedge clk);in_valid=0;
   wait(received==700);repeat(10) @(negedge clk);
  end endtask
  always @(posedge clk) if(out_valid) begin
-  if(received>=700 || out_data!==expected[received]) $fatal(1,"Mismatch sample %0d got %h expected %h",received,out_data,expected[received]);
-  received=received+1;
+  for(integer lane=0;lane<2;lane=lane+1) begin
+   if(received>=700 || out_data[lane*32+:32]!==expected[received]) $fatal(1,"Mismatch sample %0d got %h expected %h",received,out_data[lane*32+:32],expected[received]);
+   received=received+1;
+  end
  end
  integer k;reg [31:0] v;
  initial begin

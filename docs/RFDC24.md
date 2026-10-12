@@ -1,5 +1,7 @@
 # RFDC 24x / PL 200 MSPS
 
+历史记录：当前工程已升级为 [600 MSPS / SSR=2](SSR600.md)，下列参数与验证只属于旧版本。
+
 本版本 ADC、DAC 均为 4.8 GSPS，RFDC 内部抽取/插值均为 24x。
 ADC 每个 I/Q 分量端口为 16bit；DAC 为 32bit，每拍 `{Q,I}` 一个复数样本。
 外部参考时钟保持 300 MHz，RFDC Clock Out 保持 300 MHz；ADC、DAC Clocking Wizard 输出改为 200 MHz。

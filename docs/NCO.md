@@ -56,7 +56,7 @@ ADC/DAC Tile0 DRP 基址 0x16000/0x6000，物理切片步长 0x400，NCO_UPDT �
 ## 频率字
 
 word = round(f_NCO / Fs * 2^48)，负数按 48 位补码编码。此接口范围为 [-Fs/2, Fs/2)。
-Fs 使用 ADC/DAC 原始采样率 4800 MHz，不是抽取后的 2400 MHz，也不是 PL 的 300 MHz。
+Fs 使用 ADC/DAC 原始采样率 4800 MHz，不是抽取后的 600 MSPS，也不是 PL 的 300 MHz 时钟。
 
 示例：+1200 MHz → 400000000000；-1200 MHz → C00000000000；0 → 000000000000。
 任意频点可用可选工具 docs/maintenance/nco_word.ps1 -FrequencyMHz 1000 换算；上板操作只需 VIO，无需运行脚本。

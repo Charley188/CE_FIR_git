@@ -1,19 +1,19 @@
 # 定点链路与验证边界
 
-主 TB 和 ADDA 共用 rtl/adda_first_path_chain.v，包括三个时钟域的复位同步、ADC I/Q 成对握手、跨时钟 FIFO、复数 FIR及32bit DAC输出。
+主 TB 和 ADDA 共用 rtl/adda_first_path_chain.v，包括三个时钟域的复位同步、ADC I/Q 成对握手、跨时钟 FIFO、SSR=2复数 FIR及64bit DAC输出。
 
 数学模型：
 
-1. 输入为RFDC完成24倍抽取后的200 MSPS复数数据，I/Q各16bit。PL不再抽取。
-2. 四个实数 FIR 实现 I*Cr−Q*Ci、I*Ci+Q*Cr。COE 是 signed18 整数，表示 Q2.16。
+1. 输入为RFDC完成8倍抽取后的600 MSPS复数数据，每点I/Q各16bit，每个300 MHz beat有两个连续复数点。PL不再抽取。
+2. 四个SSR=2实数 FIR 实现 I*Cr−Q*Ci、I*Ci+Q*Cr。COE 是 signed18 整数，表示 Q2.16。每个实数FIR输入32bit、输出96bit，两个输出各补齐至48bit。
 3. FIR 全精度结果扩展到 49 位，复数加减后算术右移 16 位（向负无穷取整），饱和到 signed16。
-4. FIR结果经过32bit异步FIFO送到DAC接口；24倍插值由RFDC完成，不纳入PL定点模型。
-5. 每个 DAC beat 仅一个32bit复数点，I在低16位、Q在高16位。
+4. FIR结果经过64bit异步FIFO送到DAC接口；8倍插值由RFDC完成，不纳入PL定点模型。
+5. 每个 DAC beat 包含两个32bit复数点，低32bit是较早的样本；总排列为{Q1,I1,Q0,I0}。
 
 MATLAB 使用整数输入及双精度卷积，累加值限制在 2^48 内，因此整数乘加在双精度 53 位有效精度内可精确表示。
 模式一添加 FIR 尾部冲刷零，模式二处理输入文件中的全部样本，不额外追加或移除未知样本。
 
-TB 的 ADC/DAC 时钟均为 200 MHz，但有相位差；算法时钟 200 MHz；DAC默认施加确定性随机背压，也支持连续流测试。比较按有效握手后的样本次序，不比较模拟时钟延迟。
+TB 的 ADC/DAC 时钟均为 300 MHz，但有相位差；算法时钟 300 MHz；DAC默认施加确定性随机背压，也支持连续流测试。比较按有效握手后的样本次序，不比较模拟时钟延迟。输入文件为input_600_i/q.txt；冲刷零后补齐偶数长度，逐点比较包含补齐点。
 
 本主TB验证第一路数字链路及第二路逐点直通，不建模RFDC模拟性能、内部抽取/插值滤波器、射频NCO或板上时序。板级 sys_top 已接入在线加载，RFDC BD 已接入 Fine NCO/VIO。
 系数宽度/RTL 缩放改动属于新的定点配置，不能只改 MATLAB 数字就视为位宽优化验证完成。

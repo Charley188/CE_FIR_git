@@ -4,33 +4,33 @@
 module tb_main;
   localparam integer MAX_SAMPLES=1048576;
   reg adc_clk=0, alg_clk=0, dac_clk=0, rst_n=0;
-  always #2.5 adc_clk=~adc_clk;
-  always #2.5 alg_clk=~alg_clk;
-  initial begin #0.73; forever #2.5 dac_clk=~dac_clk; end
-  reg [15:0] adc_i=0,adc_q=0;
+  always #(5.0/3.0) adc_clk=~adc_clk;
+  always #(5.0/3.0) alg_clk=~alg_clk;
+  initial begin #0.73; forever #(5.0/3.0) dac_clk=~dac_clk; end
+  reg [31:0] adc_i=0,adc_q=0;
   reg adc_valid=0;
   wire i_ready,q_ready;
-  wire [31:0] dac_data;
+  wire [63:0] dac_data;
   wire dac_valid,overflow,underflow;
   reg dac_ready=0;
   `include "online_coeff_tb.vh"
   adda_first_path_chain dut (
     .update_hold(hold),.coeff_we(we),.coeff_addr(addr),.coeff_re(cr),.coeff_im(ci),
     .coeff_match(match),.load_quiet(quiet),.path_running(running),.reload_fault(fault),
-    .clk_adc0(adc_clk),.clk_200m(alg_clk),.clk_dac0(dac_clk),
-    .pl_rstn(rst_n),.rf_adc_axis_rstn(rst_n),.clk_200m_locked(rst_n),.rf_dac_axis_rstn(rst_n),
+    .clk_adc0(adc_clk),.clk_alg(alg_clk),.clk_dac0(dac_clk),
+    .pl_rstn(rst_n),.rf_adc_axis_rstn(rst_n),.alg_clk_locked(rst_n),.rf_dac_axis_rstn(rst_n),
     .m00_axis_tdata(adc_i),.m00_axis_tvalid(adc_valid),.m00_axis_tready(i_ready),
     .m01_axis_tdata(adc_q),.m01_axis_tvalid(adc_valid),.m01_axis_tready(q_ready),
     .s00_axis_tdata(dac_data),.s00_axis_tvalid(dac_valid),.s00_axis_tready(dac_ready),
     .fifo_overflow(overflow),.fifo_underflow(underflow));
   // Exercise the second channel independently, including DAC backpressure.
-  reg [15:0] bypass_i=0,bypass_q=0;
+  reg [31:0] bypass_i=0,bypass_q=0;
   reg bypass_valid=0;
   wire bypass_ir,bypass_qr,bypass_ov,bypass_uv,bypass_out_valid;
-  wire [31:0] bypass_out;
+  wire [63:0] bypass_out;
   integer bypass_sent=0,bypass_received=0;
   reg bypass_done=0,bypass_prev_valid=0,bypass_prev_ready=0;
-  reg [31:0] bypass_prev_data=0;
+  reg [63:0] bypass_prev_data=0;
   ad_data_cdc bypass_dut (
     .clk_adc(adc_clk),.clk_dac(dac_clk),.arst_n(rst_n),
     .m0_axis_tdata(bypass_i),.m1_axis_tdata(bypass_q),
@@ -45,8 +45,9 @@ module tb_main;
   integer max_join_count=0;
   reg loaded=0,input_done=0;
   reg prev_dac_valid=0,prev_dac_ready=0;
-  reg [31:0] prev_dac_data=0;
+  reg [63:0] prev_dac_data=0;
   reg [31:0] rng=32'h12345678;
+  bit injecting_faults=0;
   string in_dir,out_dir;
   initial begin
     if (!$value$plusargs("INPUT_DIR=%s",in_dir)) $fatal(1,"Missing INPUT_DIR");
@@ -57,9 +58,9 @@ module tb_main;
     fc=$fopen({in_dir,"/config.txt"},"r");
     if (!fc) $fatal(1,"Run MATLAB MAIN mode 1 first");
     rc=$fscanf(fc,"%d",ns);$fclose(fc);
-    if (rc!=1 || ns<192 || ns>MAX_SAMPLES) $fatal(1,"Invalid sample count");
-    fi=$fopen({in_dir,"/input_200_i.txt"},"r");
-    fq=$fopen({in_dir,"/input_200_q.txt"},"r");
+    if (rc!=1 || ns<192 || ns>MAX_SAMPLES || ns%2!=0) $fatal(1,"Invalid sample count");
+    fi=$fopen({in_dir,"/input_600_i.txt"},"r");
+    fq=$fopen({in_dir,"/input_600_q.txt"},"r");
     if (!fi || !fq) $fatal(1,"Missing I/Q stimulus");
     for(j=0;j<ns;j=j+1) begin
       rc=$fscanf(fi,"%d",xi[j]);if(rc!=1) $fatal(1,"Invalid I row %0d",j);
@@ -78,13 +79,13 @@ module tb_main;
     repeat(64) @(negedge adc_clk);
     repeat(64) @(negedge axi_clk); // XPM command/reply FIFO reset release
     load_coefficients();
-    for(b=0;b<ns;b=b+1) begin
-      adc_i=xi[b];adc_q=xq[b];
+    for(b=0;b<ns;b=b+2) begin
+      adc_i={16'(xi[b+1]),16'(xi[b])};adc_q={16'(xq[b+1]),16'(xq[b])};
       adc_valid=1;
       @(posedge adc_clk);
-      if ($test$plusargs("CONTINUOUS") && sent>32 && !(i_ready && q_ready)) $fatal(1,"Input throughput below one sample/cycle");
+      if ($test$plusargs("CONTINUOUS") && sent>32 && !(i_ready && q_ready)) $fatal(1,"Input throughput below two samples/cycle");
       while(!(i_ready && q_ready)) @(posedge adc_clk);
-      sent=sent+1;
+      sent=sent+2;
       @(negedge adc_clk);
     end
     adc_valid=0;input_done=1;
@@ -92,12 +93,12 @@ module tb_main;
   initial begin
     wait(loaded && rst_n);
     repeat(64) @(negedge adc_clk);
-    for(integer k=0;k<ns;k=k+1) begin
-      bypass_i=xi[k];bypass_q=xq[k];bypass_valid=1;
+    for(integer k=0;k<ns;k=k+2) begin
+      bypass_i={16'(xi[k+1]),16'(xi[k])};bypass_q={16'(xq[k+1]),16'(xq[k])};bypass_valid=1;
       @(posedge adc_clk);
-      if ($test$plusargs("CONTINUOUS") && k>32 && !(bypass_ir && bypass_qr)) $fatal(1,"Bypass throughput below one sample/cycle");
+      if ($test$plusargs("CONTINUOUS") && k>32 && !(bypass_ir && bypass_qr)) $fatal(1,"Bypass throughput below two samples/cycle");
       while(!(bypass_ir && bypass_qr)) @(posedge adc_clk);
-      bypass_sent=bypass_sent+1;
+      bypass_sent=bypass_sent+2;
       @(negedge adc_clk);
     end
     bypass_valid=0;bypass_done=1;
@@ -108,8 +109,10 @@ module tb_main;
     if(bypass_prev_valid && !bypass_prev_ready && (!bypass_out_valid || bypass_out!==bypass_prev_data)) $fatal(1,"Bypass changed under stall");
     if(bypass_out_valid && dac_ready) begin
       if(bypass_received>=ns) $fatal(1,"Extra bypass output");
-      if($signed(bypass_out[15:0])!==xi[bypass_received] || $signed(bypass_out[31:16])!==xq[bypass_received]) $fatal(1,"Bypass sample/order mismatch %0d",bypass_received);
-      bypass_received=bypass_received+1;
+      for(integer lane=0;lane<2;lane=lane+1) begin
+        if($signed(bypass_out[lane*32+:16])!==xi[bypass_received] || $signed(bypass_out[lane*32+16+:16])!==xq[bypass_received]) $fatal(1,"Bypass sample/order mismatch %0d",bypass_received);
+        bypass_received=bypass_received+1;
+      end
     end
     bypass_prev_valid<=bypass_out_valid;bypass_prev_ready<=dac_ready;bypass_prev_data<=bypass_out;
   end
@@ -121,11 +124,19 @@ module tb_main;
     cycles=cycles+1;
     if(cycles>ns*100+100000) $fatal(1,"Timeout sent=%0d decim=%0d FIR=%0d DAC=%0d",sent,nd,nf,no);
     if($isunknown({i_ready,q_ready,overflow,underflow})) $fatal(1,"Unknown control");
-    if(overflow || underflow) $fatal(1,"FIFO fault");
+    // Random backpressure deliberately creates upstream pressure; after the
+    // finite vector drains, a continuously-ready DAC deliberately starves.
+    if(!injecting_faults && (dut.sample_fifo_overflow || dut.sample_fifo_underflow ||
+       dut.fir_fifo_overflow || dut.fir_fifo_underflow || dut.block_fifo_overflow || dut.block_fifo_underflow))
+       $fatal(1,"Internal FIFO fault");
+    if(!injecting_faults && $test$plusargs("CONTINUOUS") && no<ns && (overflow || underflow))
+       $fatal(1,"Continuous stream pressure/starvation");
     if(adc_valid && (i_ready!==q_ready)) $fatal(1,"I/Q handshake split");
     if(dut.adc_pair_valid && dut.adc_fifo_ready) begin
       if($isunknown(dut.adc_pair_data) || nd>=ns) $fatal(1,"Invalid ADC output");
-      $fdisplay(fd,"%0d %0d %0d",nd,$signed(dut.adc_pair_data[15:0]),$signed(dut.adc_pair_data[31:16]));nd=nd+1;
+      for(integer lane=0;lane<2;lane=lane+1) begin
+        $fdisplay(fd,"%0d %0d %0d",nd,$signed(dut.adc_pair_data[lane*32+:16]),$signed(dut.adc_pair_data[lane*32+16+:16]));nd=nd+1;
+      end
     end
   end
   always @(posedge alg_clk) if(rst_n) begin
@@ -133,10 +144,18 @@ module tb_main;
     if(dut.fir_inst.core_inst.count_q_ci>max_join_count) max_join_count=dut.fir_inst.core_inst.count_q_ci;
     if(dut.fir_inst.core_inst.count_i_ci>max_join_count) max_join_count=dut.fir_inst.core_inst.count_i_ci;
     if(dut.fir_inst.core_inst.count_q_cr>max_join_count) max_join_count=dut.fir_inst.core_inst.count_q_cr;
-    if(overflow || underflow) $fatal(1,"FIFO fault");
-    if(dut.cal_valid && dut.cal_ready) begin
+    // Random backpressure deliberately creates upstream pressure; after the
+    // finite vector drains, a continuously-ready DAC deliberately starves.
+    if(!injecting_faults && (dut.sample_fifo_overflow || dut.sample_fifo_underflow ||
+       dut.fir_fifo_overflow || dut.fir_fifo_underflow || dut.block_fifo_overflow || dut.block_fifo_underflow))
+       $fatal(1,"Internal FIFO fault");
+    if(!injecting_faults && $test$plusargs("CONTINUOUS") && no<ns && (overflow || underflow))
+       $fatal(1,"Continuous stream pressure/starvation");
+    if(dut.fir_primed && dut.cal_valid && dut.cal_ready) begin
       if($isunknown(dut.cal_data) || nf>=ns) $fatal(1,"Invalid FIR output");
-      $fdisplay(ff,"%0d %0d %0d",nf,$signed(dut.cal_data[15:0]),$signed(dut.cal_data[31:16]));nf=nf+1;
+      for(integer lane=0;lane<2;lane=lane+1) begin
+        $fdisplay(ff,"%0d %0d %0d",nf,$signed(dut.cal_data[lane*32+:16]),$signed(dut.cal_data[lane*32+16+:16]));nf=nf+1;
+      end
     end
   end
   always @(posedge dac_clk) if(rst_n) begin
@@ -146,7 +165,7 @@ module tb_main;
     if(dac_valid && dac_ready) begin
       if($isunknown(dac_data) || no>=ns) $fatal(1,"Invalid DAC output");
       $fwrite(fb,"%0d",nb);
-      for(integer lane=0;lane<1;lane=lane+1) begin
+      for(integer lane=0;lane<2;lane=lane+1) begin
         ai=$signed(dac_data[lane*32+:16]);aq=$signed(dac_data[lane*32+16+:16]);
         $fdisplay(fo,"%0d %0d %0d",no,ai,aq);$fwrite(fb," %0d %0d",ai,aq);no=no+1;
       end
@@ -157,8 +176,24 @@ module tb_main;
   initial begin
     wait(loaded);wait(no==ns && bypass_received==ns);
     repeat(64) @(negedge dac_clk);
+    if(dut.dac_starved_cycles==0 || !underflow || dac_data!==64'b0) $fatal(1,"Finite-stream drain not reported/suppressed");
     if(!bypass_done || bypass_sent!=ns || bypass_out_valid) $fatal(1,"Bypass drain mismatch");
-    if(!input_done || sent!=ns || nd!=ns || nf!=ns || nb!=ns || dac_valid) $fatal(1,"Count/drain mismatch");
+    if(!input_done || sent!=ns || nd!=ns || nf!=ns || nb!=ns/2 || dac_valid) $fatal(1,"Count/drain mismatch");
+    // Remote-domain one-cycle error pulses must reach the algorithm domain,
+    // remain visible after the pulse, and clear when the chain is held for reload.
+    injecting_faults=1;
+    @(negedge adc_clk);force dut.sample_fifo_overflow=1'b1;
+    @(negedge adc_clk);release dut.sample_fifo_overflow;
+    @(negedge dac_clk);force dut.block_fifo_underflow=1'b1;
+    @(negedge dac_clk);release dut.block_fifo_underflow;
+    repeat(12) @(negedge alg_clk);
+    if(overflow!==1'b1 || underflow!==1'b1) $fatal(1,"Remote FIFO error event lost at CDC");
+    repeat(8) @(negedge alg_clk);
+    if(overflow!==1'b1 || underflow!==1'b1) $fatal(1,"Remote FIFO error not retained");
+    force dut.update_hold=1'b1;
+    repeat(32) @(negedge alg_clk);
+    if(overflow!==1'b0 || underflow!==1'b0) $fatal(1,"Remote FIFO error did not clear on reload hold");
+    $display("PASS FIFO_ERROR_CDC single-cycle events, sticky status and reload clear");
     $fclose(fd);$fclose(ff);$fclose(fo);$fclose(fb);
     fs=$fopen({out_dir,"/tb_status.txt"},"w");$fdisplay(fs,"PASS samples=%0d adc=%0d fir=%0d beats=%0d max_join=%0d",no,nd,nf,nb,max_join_count);$fclose(fs);
     $display("TB_MAIN_PASS samples=%0d; run MATLAB mode 2 for numerical comparison",no);$finish;

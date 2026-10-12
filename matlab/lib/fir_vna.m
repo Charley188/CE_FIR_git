@@ -1,7 +1,7 @@
 function result = fir_vna(root,mode,cfg)
 % Single-channel FIR VNA design; manual MEM transfer to PS only.
 assert(ismember(mode,[1 2]),'MODE must be 1 or 2');
-assert(cfg.tap_count==300 && cfg.sample_rate_hz==200e6,'This hardware requires 300 taps at 200 MSPS');
+assert(cfg.tap_count==300 && cfg.sample_rate_hz==600e6,'This hardware requires 300 taps at 600 MSPS');
 N=cfg.tap_count;
 if mode==1
     h=zeros(N,1);h(1)=1;q=[round(real(h)*65536),round(imag(h)*65536)];kind='bypass';
@@ -16,12 +16,15 @@ else
     result=fir_vna_design(freq-cfg.center_hz,H,cfg);
     h=result.h;q=result.q;kind='compensated';
 end
-% Board convention: conjugate once at the export boundary. Keep result.h/q
-% and RF-domain prediction in the mathematical design convention.
-h=conj(h);q(:,2)=-q(:,2);
-assert(all(q(:)>=-131072 & q(:)<=131071),...
-    'Conjugated taps exceed signed18; -131072 cannot be negated in signed18');
-result.hardware_conjugated=true;
+% Keep mathematical prediction/quantization in result.h/q. Apply the verified
+% board convention only to exported hardware coefficients, exactly once.
+hardware_conjugated=isfield(cfg,'hardware_conjugate') && cfg.hardware_conjugate;
+validateattributes(hardware_conjugated,{'logical','numeric'},{'scalar','binary'});
+if hardware_conjugated
+    h=conj(h);q(:,2)=-q(:,2);
+end
+assert(all(q(:)>=-131072 & q(:)<=131071),'Hardware-conjugated taps exceed signed18 range');
+result.hardware_conjugated=logical(hardware_conjugated);
 result.h_hw=h;result.q_hw=q;result.hq_hw=complex(q(:,1),q(:,2))/65536;
 out=fullfile(root,'matlab','vna','output',kind);if ~isfolder(out),mkdir(out);end
 write_coe_file(fullfile(out,'fir_coef_re.coe'),q(:,1));write_coe_file(fullfile(out,'fir_coef_im.coe'),q(:,2));
@@ -39,12 +42,15 @@ if mode==2
         'predicted_max_amplitude_error_db','predicted_phase_error_deg',...
         'passband_rms_error','quantized_error_l1','peak_gain_db','quantized_peak_gain'};
     for k=1:numel(names),fprintf(fid,'%s=%.12g\n',names{k},result.(names{k}));end
-    fprintf(fid,'hardware_conjugated=1\nprediction_convention=mathematical_design_taps\n');
+    fprintf(fid,'hardware_conjugated=%d\n',hardware_conjugated);
+    fprintf(fid,'prediction_convention=design taps before hardware export conjugation\n');
+    fprintf(fid,'measurement_file=%s\n',cfg.measurement_file);
+    fprintf(fid,'passband_hz=%.12g\nsample_rate_hz=%.12g\n',cfg.passband_hz,cfg.sample_rate_hz);
     clear cleaner;
     if cfg.show_figures
-        fig=figure('Name','FIR VNA: measured bypass / quantized correction','Color','w');tiledlayout(2,1);
+        fig=figure('Name','FIR VNA: measured baseline / quantized correction','Color','w');tiledlayout(2,1);
         nexttile;plot(f/1e6,20*log10(max(abs([H,after,target])/result.target_gain,1e-12)));
-        grid on;legend('Measured bypass','Design-domain prediction','Target');ylabel('Relative magnitude (dB)');xlabel('Baseband frequency (MHz)');
+        grid on;legend('Measured baseline','Quantized prediction','Target');ylabel('Relative magnitude (dB)');xlabel('Baseband frequency (MHz)');
         nexttile;plot(f/1e6,angle(after./target)*180/pi);grid on;
         ylabel('Residual phase vs target delay (deg)');xlabel('Baseband frequency (MHz)');
         exportgraphics(fig,fullfile(out,'response.png'),'Resolution',150);
@@ -53,11 +59,10 @@ if mode==2
         result.baseline_ripple_db,result.predicted_ripple_db,result.predicted_level_offset_db,result.predicted_phase_error_deg);
     fprintf('Target gain %.6g; total target delay %d samples; regularization %.6g (%d attempts); peak bound %.6g dB.\n',...
         result.target_gain,result.target_delay_samples,result.regularization_used,result.attempts,result.peak_gain_db);
-    fprintf('Prediction uses mathematical design taps; hardware exports use their conjugate. Confirm actual correction by remeasuring S21.\n');
+    fprintf('Prediction uses quantized taps. Confirm actual correction by remeasuring S21.\n');
+    fprintf('Hardware export conjugated=%d. MEM/COE and design.mat h/q are ready for hardware; do not conjugate again.\n',hardware_conjugated);
 end
-% Top-level h/q match exported hardware files; result.h/q (mode 2) retain design taps.
 save(fullfile(out,'design.mat'),'h','q','result','cfg');
-fprintf('Hardware export: Re unchanged, Im negated once. Do not conjugate these files again.\n');
 fprintf('VNA_MODE%d_READY: %s\nSelect vna_%s in MAIN mode 1 for digital verification.\nManually copy the two MEM files to PS; Clean > Build > Run.\n',mode,out,kind);
 end
 function [f,H]=load_response(path)

@@ -11,21 +11,21 @@ module complex_fir_stream_buffer (
     input  wire        rst_n,
     input  wire        s_valid,
     output wire        s_ready,
-    input  wire [31:0] s_data,
+    input  wire [63:0] s_data,
     output wire        m_valid,
     input  wire        m_ready,
-    output wire [31:0] m_data,
+    output wire [63:0] m_data,
     output wire        fifo_overflow_error,
     output wire        fifo_underflow_error
 );
 
     // Keep the in-flight credit
-    // window larger than the generated pipeline for continuous 200 MHz traffic.
+    // window larger than the generated pipeline for continuous SSR=2 traffic at 300 MHz (credits count two-sample beats).
     localparam integer FIFO_DEPTH = 512;
     localparam integer FIFO_COUNT_WIDTH = $clog2(FIFO_DEPTH) + 1;
     wire core_in_ready;
     wire core_out_valid;
-    wire [31:0] core_out_data;
+    wire [63:0] core_out_data;
     wire fifo_full;
     wire fifo_empty;
     wire fifo_wr_rst_busy;
@@ -76,14 +76,14 @@ module complex_fir_stream_buffer (
         .SIM_ASSERT_CHK(1),
         .CASCADE_HEIGHT(0),
         .FIFO_WRITE_DEPTH(FIFO_DEPTH),
-        .WRITE_DATA_WIDTH(32),
+        .WRITE_DATA_WIDTH(64),
         .WR_DATA_COUNT_WIDTH(FIFO_COUNT_WIDTH),
         .PROG_FULL_THRESH(FIFO_DEPTH-16),
         .FULL_RESET_VALUE(0),
         .USE_ADV_FEATURES("0707"),
         .READ_MODE("fwft"),
         .FIFO_READ_LATENCY(0),
-        .READ_DATA_WIDTH(32),
+        .READ_DATA_WIDTH(64),
         .RD_DATA_COUNT_WIDTH(FIFO_COUNT_WIDTH),
         .PROG_EMPTY_THRESH(5),
         .DOUT_RESET_VALUE("0"),

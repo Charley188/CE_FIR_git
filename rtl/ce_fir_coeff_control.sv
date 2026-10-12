@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 // Single-bank loader. One acknowledged command in flight; AXI itself never
-// waits for the 200 MHz domain. Busy/full writes return SLVERR immediately.
+// waits for the algorithm domain. Busy/full writes return SLVERR immediately.
 module ce_fir_coeff_control #(
  parameter integer WAIT_CYCLES=3000000
 )(
@@ -11,6 +11,8 @@ module ce_fir_coeff_control #(
  input wire [39:0] s_araddr,input wire s_arvalid,output wire s_arready,
  output reg [31:0] s_rdata,output reg [1:0] s_rresp,output reg s_rvalid,input wire s_rready,
  output reg update_hold,output reg coeff_we,output reg coeff_channel,
+ output reg diagnostic_bypass,
+ input tri0 diagnostic_mode_request,
  output reg [10:0] coeff_addr,output reg [17:0] coeff_re,coeff_im,
  input wire [1:0] coeff_match,load_quiet,path_running,path_fault
 );
@@ -18,7 +20,18 @@ module ce_fir_coeff_control #(
  ce_reset_sync ra(.clk(axi_clk),.arst_n(arst_n),.rst_n(axi_rst_n));
  ce_reset_sync rp(.clk(alg_clk),.arst_n(arst_n),.rst_n(alg_rst_n));
  localparam BOOT=0,QUIET=1,LOAD=2,SEALED=3,STARTING=4,RUN=5,ERROR=6;
- localparam IDLE=0,WAIT_QUIET=1,VERIFY=2,CRC=3,WAIT_RUN=4,REPLY=5;
+ localparam IDLE=0,WAIT_QUIET=1,VERIFY=2,CRC=3,WAIT_RUN=4,REPLY=5,MODE_QUIET=6;
+ reg requested_bypass,runtime_fault,auto_mode;
+ wire runtime_fault_axi,bypass_axi;
+ // Faults remain visible after startup; do not auto-reset away diagnostic evidence.
+ always @(posedge alg_clk) begin
+   if(!alg_rst_n || update_hold) runtime_fault<=0;
+   else if(|path_fault) runtime_fault<=1;
+ end
+ xpm_cdc_single #(.DEST_SYNC_FF(3),.SRC_INPUT_REG(1),.SIM_ASSERT_CHK(1)) fault_status_cdc(
+   .src_clk(alg_clk),.src_in(runtime_fault),.dest_clk(axi_clk),.dest_out(runtime_fault_axi));
+ xpm_cdc_single #(.DEST_SYNC_FF(3),.SRC_INPUT_REG(1),.SIM_ASSERT_CHK(1)) bypass_status_cdc(
+   .src_clk(alg_clk),.src_in(diagnostic_bypass),.dest_clk(axi_clk),.dest_out(bypass_axi));
  localparam E_STATE=1,E_INDEX=2,E_READBACK=3,E_COUNT=4,E_CRC=5,E_QUIET_TIMEOUT=6,E_START_TIMEOUT=7,E_FAULT=8,E_ABORT=9;
  wire cmd_full,cmd_empty,cwb,crb,rsp_full,rsp_empty,rwb,rrb;
  reg cmd_we; reg [127:0] cmd_din;
@@ -50,7 +63,7 @@ module ce_fir_coeff_control #(
  reg [127:0] snapshot;
  wire [7:0] snap_phase=snapshot[119:112];
  wire [31:0] status={16'b0,snap_phase,axi_error,snapshot[111],
-   (snapshot[127:120]!=0 || axi_error),snapshot[110],live_axi,
+   (snapshot[127:120]!=0 || axi_error || runtime_fault_axi),snapshot[110],live_axi,
    (snap_phase==SEALED),(snap_phase==LOAD),busy};
  assign s_awready=axi_rst_n && !aw_saved && !s_bvalid;
  assign s_wready=axi_rst_n && !w_saved && !s_bvalid;
@@ -71,7 +84,7 @@ module ce_fir_coeff_control #(
      if(s_rvalid && s_rready) s_rvalid<=0;
      if(s_awvalid && s_awready) begin awaddr<=s_awaddr[15:0];aw_saved<=1;end
      if(s_wvalid && s_wready) begin wdata<=s_wdata;wstrb<=s_wstrb;w_saved<=1;end
-     if(rsp_re) begin snapshot<=rsp_dout;busy<=0;end
+     if(rsp_re) begin snapshot<=rsp_dout;if(!rsp_dout[108]) busy<=0;end
      if(write_fire) begin
        aw_saved<=0;w_saved<=0;s_bvalid<=1;s_bresp<=0;
        if(wstrb!=4'hf || awaddr[1:0]!=0) begin s_bresp<=2;axi_error<=1;end
@@ -99,7 +112,9 @@ module ce_fir_coeff_control #(
        case(s_araddr[15:0])
          16'h0000:s_rdata<=32'h43465231; // CFR1
          16'h0008:s_rdata<=status;
-         16'h000c:s_rdata<={23'b0,axi_error,snapshot[127:120]};
+         16'h000c:s_rdata<={23'b0,axi_error,(runtime_fault_axi ? 8'd8 : snapshot[127:120])};
+         16'h003c:s_rdata<={30'b0,runtime_fault_axi,bypass_axi};
+         16'h0040:s_rdata<=32'h44473031; // DG01 diagnostic register ABI
          16'h0010:s_rdata<=channel;
          16'h0014:s_rdata<=index_reg;
          16'h0024:s_rdata<={20'b0,snapshot[107:96]};
@@ -121,7 +136,7 @@ module ce_fir_coeff_control #(
  wire [17:0] re_value=cmd_dout[107:90],im_value=cmd_dout[89:72];
  assign cmd_re=(state==IDLE) && !cmd_empty && !crb && alg_rst_n;
  assign rsp_we=(state==REPLY) && !rsp_full && !rwb && alg_rst_n;
- assign rsp_din={error_code,phase,valid_image,update_hold,2'b0,count0,4'b0,count1,16'b0,~crc0,~crc1};
+ assign rsp_din={error_code,phase,valid_image,update_hold,1'b0,auto_mode,count0,4'b0,count1,16'b0,~crc0,~crc1};
  function automatic [31:0] crc_byte(input [31:0] c,input [7:0] b);
    reg [31:0] t;begin t=c ^ b;for(integer n=0;n<8;n=n+1)t=t[0] ? (t>>1)^32'hedb88320 : t>>1;crc_byte=t;end
  endfunction
@@ -129,13 +144,14 @@ module ce_fir_coeff_control #(
  always @(posedge alg_clk) begin
    if(!alg_rst_n) begin
      state<=IDLE;phase<=BOOT;error_code<=0;update_hold<=1;valid_image<=0;aborting<=0;timer<=0;
+     diagnostic_bypass<=0;requested_bypass<=0;auto_mode<=0;
      coeff_we<=0;coeff_channel<=0;coeff_addr<=0;coeff_re<=0;coeff_im<=0;
      count0<=0;count1<=0;crc0<=32'hffffffff;crc1<=32'hffffffff;crc_work<=0;crc_bytes<=0;byte_index<=0;
    end else begin
      coeff_we<=0;
      case(state)
        IDLE: if(cmd_re) begin
-         state<=REPLY;
+         state<=REPLY;auto_mode<=0;
          case(op)
            1,5:begin
              update_hold<=1;valid_image<=0;count0<=0;count1<=0;crc0<=32'hffffffff;crc1<=32'hffffffff;
@@ -152,10 +168,24 @@ module ce_fir_coeff_control #(
              else if(cmd_dout[63:32]!=~crc0) begin error_code<=E_CRC;phase<=ERROR;end
              else begin phase<=SEALED;valid_image<=1;error_code<=0;end
            4:if(phase!=SEALED || !valid_image || error_code!=0) error_code<=E_STATE;
-             else begin update_hold<=0;phase<=STARTING;timer<=0;state<=WAIT_RUN;end
+             else begin diagnostic_bypass<=diagnostic_mode_request;
+               update_hold<=0;phase<=STARTING;timer<=0;state<=WAIT_RUN;end
            6:begin end // snapshot only
            default:error_code<=E_STATE;
          endcase
+       end else if(phase==RUN && valid_image && diagnostic_mode_request!=diagnostic_bypass) begin
+         requested_bypass<=diagnostic_mode_request;update_hold<=1;timer<=0;
+         error_code<=0;phase<=QUIET;state<=MODE_QUIET;auto_mode<=1;
+       end
+       MODE_QUIET:begin
+         timer<=timer+1;
+         // Change mode only after both FIFOs and FIR have been held in reset.
+         if((&load_quiet) && timer>=32) begin
+           diagnostic_bypass<=requested_bypass;update_hold<=0;
+           phase<=STARTING;timer<=0;state<=WAIT_RUN;
+         end else if(timer>=WAIT_CYCLES-1) begin
+           error_code<=E_QUIET_TIMEOUT;phase<=ERROR;state<=REPLY;
+         end
        end
        WAIT_QUIET:begin
          timer<=timer+1;

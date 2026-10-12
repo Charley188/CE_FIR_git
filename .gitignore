@@ -42,6 +42,22 @@
 
 # Disposable online verification project
 /validation/online_check/
+/validation/ssr_probe/
+/validation/ssr_check/
+/validation/ssr_continuous/
+/validation/diagnostic_check/
+/validation/diagnostic_fixed/
+# Diagnostic IP sources are XCI; Vivado regenerates the other files.
+/ip/ila_stream_diag/*
+!/ip/ila_stream_diag/ila_stream_diag.xci
+/ip/vio_stream_mode/*
+!/ip/vio_stream_mode/vio_stream_mode.xci
+/adda/project/ce_fir_adda.srcs/utils_1/imports/synth_1/
 
 # MIF copies emitted at the project root during RTL elaboration
 /*.mif
+# Only source scripts belong in validation; outputs are regenerated locally.
+/validation/*/
+*.dcp
+*.mif
+/adda/bd/*/ui/

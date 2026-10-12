@@ -19,7 +19,7 @@
 
 PS 先验证文件再发 BEGIN。BEGIN 暂停/复位第一路数据链，逐项写 staging RAM、读回核对、计算 CRC；完整性检查通过才通过四个 FIR 的 RELOAD/CONFIG 接口应用新系数并释放数据链。切换期间信号有中断，不是无缝切换。应用启动过程还会按原程序重启 RFDC。
 
-FIR IP 固定为 Non_Symmetric、18 位系数、16 位数据、300 taps、列 150,150、Coefficient_Reload=true。即使 bypass 或虚部全零也不改结构。生成的 reload_order 为 299..0，RTL 自动倒序发送，用户不重排 MEM。两套 IP 的 AXI 输出均为48位，复数加减使用49位后右移16位并饱和。
+FIR IP 固定为 Non_Symmetric、18 位系数、16 位数据、300 taps、列 150,150、Coefficient_Reload=true、600/300 MHz（SSR=2）。即使 bypass 或虚部全零也不改结构。生成的 reload_order 为 299..0，RTL 自动倒序发送，用户不重排 MEM。两套 IP 的 AXI 输出均为96位（每点48位），两个样本分别进行49位复数加减后右移16位并饱和。
 
 ## 每次换频点
 
@@ -27,7 +27,7 @@ FIR IP 固定为 Non_Symmetric、18 位系数、16 位数据、300 taps、列 15
 
 ## 维护接口
 
-从机地址继承 BD 的 `param_m_axi`，PS 使用 `XPAR_PARAM_M_AXI_BASEADDR`。ID=0x43465231（CFR1，防止误用 FFT 加载器）。32位对齐、全字节写；AXI响应不等待算法时钟，命令用异步FIFO跨到200MHz，PS通过BUSY轮询。
+从机地址继承 BD 的 `param_m_axi`，PS 使用 `XPAR_PARAM_M_AXI_BASEADDR`。ID=0x43465231（CFR1，防止误用 FFT 加载器）。32位对齐、全字节写；AXI响应不等待算法时钟，命令用异步FIFO跨到300MHz，PS通过BUSY轮询。
 
 | 偏移 | 功能 |
 |---|---|

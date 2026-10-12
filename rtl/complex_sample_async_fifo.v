@@ -1,17 +1,17 @@
 `timescale 1ns / 1ps
 
-module complex_sample_async_fifo (
+module complex_sample_async_fifo #(parameter integer DATA_WIDTH = 64) (
     input  wire        rst,
 
     input  wire        wr_clk,
     input  wire        wr_valid,
     output wire        wr_ready,
-    input  wire [31:0] wr_data,
+    input  wire [DATA_WIDTH-1:0] wr_data,
 
     input  wire        rd_clk,
     output wire        rd_valid,
     input  wire        rd_ready,
-    output wire [31:0] rd_data,
+    output wire [DATA_WIDTH-1:0] rd_data,
     output wire [5:0]  rd_level,
 
     output wire        overflow,
@@ -42,14 +42,14 @@ module complex_sample_async_fifo (
         .SIM_ASSERT_CHK      (1),
         .CASCADE_HEIGHT      (0),
         .FIFO_WRITE_DEPTH    (32),
-        .WRITE_DATA_WIDTH    (32),
+        .WRITE_DATA_WIDTH    (DATA_WIDTH),
         .WR_DATA_COUNT_WIDTH (6),
         .PROG_FULL_THRESH    (24),
         .FULL_RESET_VALUE    (0),
         .USE_ADV_FEATURES    ("0505"),
         .READ_MODE           ("fwft"),
         .FIFO_READ_LATENCY   (0),
-        .READ_DATA_WIDTH     (32),
+        .READ_DATA_WIDTH     (DATA_WIDTH),
         .RD_DATA_COUNT_WIDTH (6),
         .PROG_EMPTY_THRESH   (4),
         .DOUT_RESET_VALUE    ("0"),
